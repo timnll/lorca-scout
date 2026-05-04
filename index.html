@@ -296,8 +296,12 @@
 
 <script>
 // ── Config ───────────────────────────────────────────────────────────────────
-const SERVER = 'http://localhost:3001';
-const WS_URL = 'ws://localhost:3001';
+const IS_LOCAL = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+const SERVER = IS_LOCAL ? 'http://localhost:3001' : `${location.protocol}//${location.host}`;
+
+const WS_URL  = IS_LOCAL
+  ? 'ws://localhost:3001'
+  : (location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host;
 
 const COLORS = [
   { id: 'amber',     label: 'Ambre',      hex: '#E9A326' },

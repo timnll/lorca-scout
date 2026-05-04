@@ -185,5 +185,11 @@ app.get('/api/events/:id/colors', (req, res) => {
 // Health check
 app.get('/api/health', (_, res) => res.json({ ok: true, events: Object.keys(store) }));
 
+// Sert le client HTML pour toutes les routes non-API
+const path = require('path');
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'index.html'));
+});
+
 const PORT = process.env.PORT || 3001;
-server.listen(PORT, () => console.log(`🟢 Lorcana Scout server running on http://localhost:${PORT}`));
+server.listen(PORT, () => console.log(`🟢 Lorcana Scout running on port ${PORT}`));

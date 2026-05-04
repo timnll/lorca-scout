@@ -1,0 +1,2 @@
+# lorca-scout
+scouting app

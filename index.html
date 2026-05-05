@@ -2,294 +2,527 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>Lorcana Scout</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg:       #0e0f11;
-    --surface:  #161820;
-    --raised:   #1e2028;
-    --border:   #2a2d38;
-    --accent:   #c8a97e;
-    --accent2:  #7ea3c8;
-    --text:     #e8e4dc;
-    --muted:    #6b7280;
-    --danger:   #c87e7e;
-    --radius:   10px;
-    --font:     'Syne', sans-serif;
-    --mono:     'DM Mono', monospace;
-  }
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  html, body { height: 100%; background: var(--bg); color: var(--text); font-family: var(--font); font-size: 15px; }
+:root {
+  --bg:        #0a0b0d;
+  --surface:   #13151a;
+  --raised:    #1c1f27;
+  --card:      #20232d;
+  --border:    #2c2f3e;
+  --border2:   #383c50;
+  --accent:    #d4a853;
+  --accent-dim:#3a2e18;
+  --blue:      #5b8dd9;
+  --text:      #eceae4;
+  --sub:       #9097aa;
+  --muted:     #5a6070;
+  --danger:    #d96b6b;
+  --success:   #6bb86b;
+  --r: 12px;
+  --r-lg: 18px;
+  --font: 'Space Grotesk', sans-serif;
+  --mono: 'JetBrains Mono', monospace;
+  --nav-h: 64px;
+  --header-h: 58px;
 
-  /* ── Layout ── */
-  .app { display: grid; grid-template-rows: auto 1fr; height: 100vh; overflow: hidden; }
-  header { padding: 14px 24px; background: var(--surface); border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
-  .logo { font-size: 18px; font-weight: 700; letter-spacing: -0.5px; color: var(--accent); white-space: nowrap; }
-  .logo span { color: var(--muted); font-weight: 400; }
-  .url-form { display: flex; gap: 8px; flex: 1; min-width: 280px; }
-  .url-form input {
-    flex: 1; background: var(--raised); border: 1px solid var(--border); border-radius: var(--radius);
-    color: var(--text); font-family: var(--mono); font-size: 12px; padding: 8px 12px;
-    outline: none; transition: border-color 0.15s;
-  }
-  .url-form input:focus { border-color: var(--accent); }
-  .url-form input::placeholder { color: var(--muted); }
-  .btn {
-    background: var(--raised); border: 1px solid var(--border); border-radius: var(--radius);
-    color: var(--text); font-family: var(--font); font-size: 13px; padding: 8px 16px;
-    cursor: pointer; transition: all 0.15s; white-space: nowrap;
-  }
-  .btn:hover { border-color: var(--accent); color: var(--accent); }
-  .btn.primary { background: var(--accent); color: #0e0f11; border-color: var(--accent); font-weight: 500; }
-  .btn.primary:hover { opacity: 0.88; color: #0e0f11; }
-  .btn.small { font-size: 12px; padding: 5px 10px; }
-  .event-meta { font-size: 12px; color: var(--muted); font-family: var(--mono); display: flex; gap: 16px; flex-wrap: wrap; }
-  .event-meta b { color: var(--text); }
+  /* Lorcana colors */
+  --amber:    #E9A326;
+  --amethyst: #9B59B6;
+  --emerald:  #27AE60;
+  --ruby:     #C0392B;
+  --sapphire: #2980B9;
+  --steel:    #7F8C8D;
+}
 
-  /* ── Main split ── */
-  main { display: grid; grid-template-columns: 200px 1fr 360px; overflow: hidden; }
-  @media (max-width: 1000px) { main { grid-template-columns: 1fr 360px; } .sidebar { display: none; } }
-  @media (max-width: 800px) { main { grid-template-columns: 1fr; } }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html { height: 100%; -webkit-text-size-adjust: 100%; }
+body {
+  height: 100%; background: var(--bg); color: var(--text);
+  font-family: var(--font); font-size: 15px; line-height: 1.4;
+  overflow: hidden;
+}
 
-  /* ── Sidebar: historique événements ── */
-  .sidebar { display: flex; flex-direction: column; overflow: hidden; border-right: 1px solid var(--border); background: var(--surface); }
-  .sidebar-header { padding: 12px 14px 8px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); }
-  .sidebar-title { font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); }
-  .sidebar-clear { font-size: 10px; font-family: var(--mono); color: var(--muted); cursor: pointer; padding: 2px 6px; border: 1px solid var(--border); border-radius: 4px; background: none; }
-  .sidebar-clear:hover { color: var(--danger); border-color: var(--danger); }
-  .sidebar-list { flex: 1; overflow-y: auto; padding: 6px; display: flex; flex-direction: column; gap: 3px; }
-  .sidebar-event {
-    padding: 8px 10px; border-radius: 8px; cursor: pointer;
-    transition: background 0.12s; border: 1px solid transparent;
-  }
-  .sidebar-event:hover { background: var(--raised); border-color: var(--border); }
-  .sidebar-event.active { background: var(--raised); border-color: var(--accent); }
-  .se-id { font-family: var(--mono); font-size: 10px; color: var(--muted); margin-bottom: 3px; }
-  .se-name { font-size: 12px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.3; }
-  .se-meta { font-family: var(--mono); font-size: 10px; color: var(--muted); margin-top: 3px; display: flex; gap: 6px; }
-  .se-scouted { color: var(--accent); }
-  .sidebar-empty { padding: 1.5rem 1rem; text-align: center; font-family: var(--mono); font-size: 11px; color: var(--muted); line-height: 1.6; }
+/* ── App shell ── */
+.app { display: flex; flex-direction: column; height: 100vh; height: 100dvh; }
 
-  /* ── Left: Pairings ── */
-  .pairings-panel { display: flex; flex-direction: column; overflow: hidden; border-right: 1px solid var(--border); }
-  .panel-header { display: flex; align-items: center; gap: 10px; padding: 12px 20px; border-bottom: 1px solid var(--border); background: var(--surface); }
-  .panel-title { font-size: 13px; font-weight: 500; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); }
-  .round-nav { display: flex; align-items: center; gap: 6px; margin-left: auto; }
-  .round-label { font-family: var(--mono); font-size: 13px; color: var(--accent); min-width: 70px; text-align: center; }
-  .nav-btn { background: none; border: 1px solid var(--border); border-radius: 6px; color: var(--muted); width: 26px; height: 26px; cursor: pointer; font-size: 14px; transition: all 0.12s; }
-  .nav-btn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
-  .nav-btn:disabled { opacity: 0.3; cursor: default; }
-  .pairings-list { flex: 1; overflow-y: auto; padding: 12px 16px; display: flex; flex-direction: column; gap: 6px; }
+/* ── Header ── */
+.app-header {
+  height: var(--header-h); flex-shrink: 0;
+  background: var(--surface); border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; padding: 0 16px; gap: 10px;
+  position: relative; z-index: 10;
+}
+.logo-mark {
+  font-size: 20px; font-weight: 700; color: var(--accent); letter-spacing: -0.5px;
+  white-space: nowrap;
+}
+.logo-mark em { color: var(--sub); font-style: normal; font-weight: 300; }
 
-  /* ── Pairing card ── */
-  .pairing-card {
-    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
-    display: grid; grid-template-columns: 28px 1fr 28px 1fr; align-items: center;
-    gap: 0; overflow: hidden; transition: border-color 0.15s;
-  }
-  .pairing-card:hover { border-color: #3a3d4a; }
-  .table-num { font-family: var(--mono); font-size: 10px; color: var(--muted); text-align: center; padding: 0 4px; }
-  .vs-divider { font-family: var(--mono); font-size: 10px; color: var(--border); text-align: center; }
-  .player-cell {
-    padding: 10px 12px; cursor: pointer; transition: background 0.12s; border-radius: 0;
-    display: flex; flex-direction: column; gap: 5px;
-  }
-  .player-cell:hover { background: var(--raised); }
-  .player-cell.has-colors { border-left: 2px solid var(--accent); }
-  .p-name { font-size: 13px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .p-name.bye { color: var(--muted); font-style: italic; }
-  .p-colors { display: flex; gap: 4px; min-height: 10px; }
-  .dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.event-id-form { flex: 1; display: flex; align-items: center; gap: 8px; }
+.id-input-wrap {
+  flex: 1; display: flex; align-items: center;
+  background: var(--raised); border: 1.5px solid var(--border);
+  border-radius: var(--r); overflow: hidden; transition: border-color 0.15s;
+}
+.id-input-wrap:focus-within { border-color: var(--accent); }
+.id-prefix {
+  padding: 0 8px 0 12px; font-family: var(--mono); font-size: 11px;
+  color: var(--muted); white-space: nowrap; border-right: 1px solid var(--border);
+  height: 38px; display: flex; align-items: center;
+}
+#idInput {
+  flex: 1; background: none; border: none; outline: none;
+  color: var(--text); font-family: var(--mono); font-size: 14px;
+  padding: 0 12px; height: 38px; min-width: 0;
+  -webkit-appearance: none;
+}
+#idInput::placeholder { color: var(--muted); }
+.load-btn {
+  height: 38px; padding: 0 14px; background: var(--accent); border: none;
+  border-radius: var(--r); color: #0a0b0d; font-family: var(--font);
+  font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap;
+  transition: opacity 0.15s; flex-shrink: 0;
+}
+.load-btn:active { opacity: 0.75; }
 
-  /* ── Right: Roster + color listing ── */
-  .right-panel { display: flex; flex-direction: column; overflow: hidden; }
-  .tabs { display: flex; border-bottom: 1px solid var(--border); background: var(--surface); }
-  .tab-btn { flex: 1; padding: 10px; font-family: var(--font); font-size: 12px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.8px; background: none; border: none; color: var(--muted); cursor: pointer; transition: all 0.15s; border-bottom: 2px solid transparent; }
-  .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+.ws-pill {
+  font-family: var(--mono); font-size: 10px; padding: 3px 7px;
+  border-radius: 99px; border: 1px solid var(--border); color: var(--muted);
+  white-space: nowrap; flex-shrink: 0;
+}
+.ws-pill.on { color: var(--success); border-color: var(--success); }
 
-  .tab-panel { display: none; flex-direction: column; overflow: hidden; flex: 1; }
-  .tab-panel.active { display: flex; }
+/* ── Content area ── */
+.content { flex: 1; overflow: hidden; position: relative; }
 
-  .search-bar { padding: 10px 14px; border-bottom: 1px solid var(--border); }
-  .search-bar input {
-    width: 100%; background: var(--raised); border: 1px solid var(--border); border-radius: var(--radius);
-    color: var(--text); font-family: var(--mono); font-size: 12px; padding: 7px 11px; outline: none;
-  }
-  .search-bar input:focus { border-color: var(--accent2); }
-  .search-bar input::placeholder { color: var(--muted); }
-  .list-scroll { flex: 1; overflow-y: auto; padding: 8px 12px; display: flex; flex-direction: column; gap: 4px; }
+/* ── Screens ── */
+.screen {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  overflow: hidden;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.18s;
+}
+.screen.active { opacity: 1; pointer-events: all; }
 
-  /* ── Roster row ── */
-  .roster-row {
-    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
-    transition: border-color 0.12s; overflow: hidden;
-  }
-  .roster-row:hover { border-color: #3a3d4a; }
-  .roster-row.has-colors { border-left: 2px solid var(--accent); }
-  .roster-row-top { display: flex; align-items: center; gap: 8px; padding: 8px 10px; cursor: pointer; }
-  .r-name { flex: 1; font-size: 13px; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .r-colors { display: flex; gap: 3px; }
-  .r-dot { width: 12px; height: 12px; border-radius: 50%; }
-  .r-chevron { font-size: 11px; color: var(--muted); transition: transform 0.15s; flex-shrink: 0; }
-  .roster-row.expanded .r-chevron { transform: rotate(180deg); }
-  .roster-inline-picker {
-    display: none; padding: 8px 10px 10px; border-top: 1px solid var(--border);
-    background: var(--raised); gap: 8px; flex-wrap: wrap; align-items: center;
-  }
-  .roster-row.expanded .roster-inline-picker { display: flex; }
-  .inline-color-btn {
-    display: flex; align-items: center; gap: 5px; padding: 4px 10px;
-    border-radius: 99px; border: 1.5px solid transparent; cursor: pointer;
-    font-size: 12px; font-family: var(--mono); color: var(--muted);
-    transition: all 0.12s; background: var(--surface);
-  }
-  .inline-color-btn:hover { border-color: var(--border); color: var(--text); }
-  .inline-color-btn.sel { border-color: currentColor; color: var(--text); }
-  .inline-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
-  .inline-clear { font-size: 11px; font-family: var(--mono); color: var(--muted); cursor: pointer; margin-left: auto; padding: 4px 8px; border: 1px solid var(--border); border-radius: 6px; }
-  .inline-clear:hover { color: var(--danger); border-color: var(--danger); }
+/* ── Screen headers ── */
+.screen-header {
+  padding: 14px 16px 10px; flex-shrink: 0;
+  display: flex; align-items: center; gap: 10px;
+}
+.screen-title { font-size: 18px; font-weight: 600; color: var(--text); }
+.screen-sub { font-size: 12px; color: var(--sub); font-family: var(--mono); margin-top: 1px; }
 
-  /* ── Color listing tab ── */
-  .color-listing { flex: 1; overflow-y: auto; }
-  .cl-group { margin: 0; }
-  .cl-combo-header {
-    display: flex; align-items: center; gap: 8px; padding: 8px 14px;
-    background: var(--raised); border-bottom: 1px solid var(--border);
-    font-size: 11px; font-family: var(--mono); color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px;
-    position: sticky; top: 0;
-  }
-  .cl-player { display: flex; align-items: center; gap: 8px; padding: 7px 14px; border-bottom: 1px solid var(--border); cursor: pointer; transition: background 0.1s; }
-  .cl-player:hover { background: var(--raised); }
-  .cl-player-name { font-size: 13px; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* ── Round selector (pairings) ── */
+.round-strip {
+  padding: 0 16px 10px; flex-shrink: 0;
+  display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none;
+}
+.round-strip::-webkit-scrollbar { display: none; }
+.round-chip {
+  height: 30px; padding: 0 14px; border-radius: 99px;
+  border: 1.5px solid var(--border); background: var(--surface);
+  color: var(--sub); font-family: var(--mono); font-size: 12px;
+  cursor: pointer; white-space: nowrap; flex-shrink: 0; transition: all 0.12s;
+}
+.round-chip.active { background: var(--accent-dim); border-color: var(--accent); color: var(--accent); font-weight: 500; }
+.round-chip:active { opacity: 0.7; }
 
-  /* ── Modal ── */
-  .modal-overlay {
-    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.65);
-    z-index: 1000; align-items: center; justify-content: center;
-  }
-  .modal-overlay.open { display: flex; }
-  .modal {
-    background: var(--raised); border: 1px solid var(--border); border-radius: 14px;
-    padding: 24px; width: 340px; max-width: 95vw;
-    animation: slideUp 0.18s ease;
-  }
-  @keyframes slideUp { from { transform: translateY(12px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-  .modal-name { font-size: 18px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
-  .modal-sub { font-size: 12px; color: var(--muted); font-family: var(--mono); margin-bottom: 20px; }
-  .color-options { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; }
-  .color-opt { display: flex; flex-direction: column; align-items: center; gap: 5px; cursor: pointer; }
-  .color-swatch {
-    width: 42px; height: 42px; border-radius: 50%; border: 2px solid transparent;
-    transition: all 0.15s; position: relative;
-  }
-  .color-swatch:hover { transform: scale(1.1); }
-  .color-swatch.selected { border-color: #fff; transform: scale(1.12); box-shadow: 0 0 0 3px rgba(255,255,255,0.15); }
-  .color-swatch.selected::after {
-    content: '✓'; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
-    font-size: 14px; color: white; font-family: var(--font);
-  }
-  .color-name { font-size: 10px; color: var(--muted); font-family: var(--mono); }
-  .modal-actions { display: flex; gap: 8px; justify-content: flex-end; }
-  .modal-note { font-size: 11px; color: var(--muted); font-family: var(--mono); margin-bottom: 14px; }
-  .count-badge { font-family: var(--mono); font-size: 11px; color: var(--accent); }
+/* ── Scroll area ── */
+.scroll-area { flex: 1; overflow-y: auto; padding: 0 12px 16px; -webkit-overflow-scrolling: touch; }
 
-  /* ── States ── */
-  .loading-state, .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 3rem 1rem; color: var(--muted); font-family: var(--mono); font-size: 13px; gap: 8px; }
-  .spinner { width: 24px; height: 24px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .error-banner { padding: 10px 16px; background: rgba(200,126,126,0.1); border: 1px solid var(--danger); border-radius: var(--radius); font-family: var(--mono); font-size: 12px; color: var(--danger); margin: 8px 16px; }
-  .ws-badge { font-family: var(--mono); font-size: 11px; padding: 3px 8px; border-radius: 99px; border: 1px solid; }
-  .ws-badge.connected { color: #7ec87e; border-color: #7ec87e; }
-  .ws-badge.disconnected { color: var(--muted); border-color: var(--border); }
+/* ── Pairing cards ── */
+.pairing-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--r-lg); margin-bottom: 8px; overflow: hidden;
+}
+.pairing-inner {
+  display: grid; grid-template-columns: 1fr 32px 1fr;
+  align-items: stretch; min-height: 70px;
+}
+.player-slot {
+  padding: 12px 14px; display: flex; flex-direction: column;
+  justify-content: center; gap: 6px; cursor: pointer;
+  transition: background 0.12s; min-width: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+.player-slot:active { background: var(--raised); }
+.player-slot.scouted { border-left: 3px solid var(--accent); }
+.player-slot.right { border-left: 1px solid var(--border); }
+.player-slot.right.scouted { border-left: 3px solid var(--accent); }
+.ps-name { font-size: 13px; font-weight: 500; line-height: 1.3; word-break: break-word; }
+.ps-name.bye { color: var(--muted); font-style: italic; font-weight: 300; }
+.ps-colors { display: flex; gap: 5px; align-items: center; min-height: 14px; }
+.cdot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+.vs-col {
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--mono); font-size: 9px; color: var(--muted);
+  border-left: 1px solid var(--border); border-right: 1px solid var(--border);
+  flex-direction: column; gap: 2px;
+}
+.table-n { font-size: 9px; color: var(--muted); font-family: var(--mono); }
 
-  /* ── Scrollbar ── */
-  ::-webkit-scrollbar { width: 4px; } ::-webkit-scrollbar-track { background: transparent; } ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+/* ── Roster rows ── */
+.roster-row {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--r-lg); margin-bottom: 6px; overflow: hidden;
+  transition: border-color 0.12s;
+}
+.roster-row.scouted { border-color: var(--border2); border-left: 3px solid var(--accent); }
+.roster-top {
+  display: flex; align-items: center; gap: 10px;
+  padding: 13px 16px; cursor: pointer; min-height: 54px;
+}
+.roster-top:active { background: var(--raised); }
+.rn { flex: 1; font-size: 14px; font-weight: 500; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rc { display: flex; gap: 4px; flex-shrink: 0; }
+.rc-dot { width: 13px; height: 13px; border-radius: 50%; }
+.fav-btn {
+  display: flex; align-items: center; justify-content: center;
+  width: 28px; height: 28px; flex-shrink: 0;
+  background: none; border: none; cursor: pointer; padding: 2px;
+  border-radius: 6px; transition: transform 0.15s, background 0.12s;
+  -webkit-tap-highlight-color: transparent;
+}
+.fav-btn:active { transform: scale(1.3); background: var(--raised); }
 
-  /* ── Live indicator ── */
-  .live-dot { width: 7px; height: 7px; border-radius: 50%; background: #7ec87e; animation: pulse 2s infinite; }
-  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+/* ── Search ── */
+.search-wrap { padding: 0 16px 10px; flex-shrink: 0; }
+.search-input {
+  width: 100%; background: var(--raised); border: 1.5px solid var(--border);
+  border-radius: var(--r); color: var(--text); font-family: var(--font);
+  font-size: 14px; padding: 10px 14px; outline: none;
+  -webkit-appearance: none; transition: border-color 0.15s;
+}
+.search-input:focus { border-color: var(--accent); }
+.search-input::placeholder { color: var(--muted); }
+
+/* ── Color listing ── */
+.combo-group { margin-bottom: 2px; }
+.combo-header {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 16px; background: var(--raised);
+  border-radius: var(--r) var(--r) 0 0;
+  font-family: var(--mono); font-size: 11px; color: var(--sub);
+  position: sticky; top: 0; z-index: 2;
+}
+.combo-count { margin-left: auto; font-weight: 500; color: var(--accent); }
+.combo-players { background: var(--surface); border-radius: 0 0 var(--r) var(--r); margin-bottom: 8px; overflow: hidden; border: 1px solid var(--border); border-top: none; }
+.combo-player {
+  padding: 11px 16px; font-size: 13px; color: var(--text);
+  border-bottom: 1px solid var(--border); cursor: pointer;
+  transition: background 0.1s;
+}
+.combo-player:last-child { border-bottom: none; }
+.combo-player:active { background: var(--raised); }
+
+/* ── History screen ── */
+.history-item {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--r-lg); padding: 14px 16px; margin-bottom: 8px;
+  cursor: pointer; transition: all 0.12s;
+}
+.history-item:active { background: var(--raised); }
+.history-item.current { border-color: var(--accent); background: var(--accent-dim); }
+.hi-id { font-family: var(--mono); font-size: 10px; color: var(--muted); margin-bottom: 4px; }
+.hi-name { font-size: 15px; font-weight: 600; margin-bottom: 6px; }
+.hi-meta { display: flex; gap: 10px; font-family: var(--mono); font-size: 11px; color: var(--sub); }
+.hi-scouted { color: var(--accent); }
+.hi-clear-btn {
+  display: flex; align-items: center; justify-content: center;
+  gap: 6px; width: 100%; margin-top: 4px; padding: 12px;
+  background: none; border: 1px solid var(--border); border-radius: var(--r-lg);
+  color: var(--muted); font-family: var(--font); font-size: 13px; cursor: pointer;
+}
+.hi-clear-btn:active { color: var(--danger); border-color: var(--danger); }
+
+/* ── Standings screen ── */
+.standings-refresh {
+  margin-left: auto; font-size: 12px; font-family: var(--mono);
+  color: var(--sub); background: none; border: 1px solid var(--border);
+  border-radius: 99px; padding: 4px 12px; cursor: pointer;
+}
+.standings-refresh:active { color: var(--accent); border-color: var(--accent); }
+.standing-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--r-lg); margin-bottom: 6px; overflow: hidden;
+  display: flex; align-items: stretch; min-height: 62px; cursor: pointer;
+  transition: border-color 0.12s;
+}
+.standing-card:active { background: var(--raised); }
+.standing-card.fav { border-left: 3px solid #f0c04088; }
+.standing-rank {
+  width: 48px; flex-shrink: 0; display: flex; align-items: center;
+  justify-content: center; flex-direction: column; gap: 2px;
+  background: var(--raised); border-right: 1px solid var(--border);
+}
+.rank-num { font-family: var(--mono); font-size: 16px; font-weight: 500; color: var(--text); }
+.rank-top1 { color: #f0c040; }
+.rank-top2 { color: #b0b8c8; }
+.rank-top3 { color: #c8956c; }
+.standing-body {
+  flex: 1; padding: 10px 14px; display: flex; flex-direction: column;
+  justify-content: center; gap: 5px; min-width: 0;
+}
+.standing-name { font-size: 14px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.standing-stats { display: flex; gap: 10px; font-family: var(--mono); font-size: 11px; color: var(--sub); flex-wrap: wrap; }
+.standing-colors { display: flex; gap: 4px; align-items: center; }
+.standing-right {
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; padding: 0 14px; gap: 2px; flex-shrink: 0;
+}
+.standing-pts { font-family: var(--mono); font-size: 18px; font-weight: 500; color: var(--accent); }
+.standing-pts-label { font-family: var(--mono); font-size: 9px; color: var(--muted); text-transform: uppercase; }
+.standings-filter {
+  display: flex; gap: 6px; padding: 0 16px 10px; flex-shrink: 0;
+}
+.filter-chip {
+  padding: 5px 14px; border-radius: 99px; font-family: var(--mono); font-size: 11px;
+  border: 1.5px solid var(--border); color: var(--sub); background: var(--surface);
+  cursor: pointer; transition: all 0.12s; white-space: nowrap;
+}
+.filter-chip.active { background: var(--accent-dim); border-color: var(--accent); color: var(--accent); }
+.standings-no-favs {
+  margin: 0 16px; padding: 16px;
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg);
+  font-family: var(--mono); font-size: 12px; color: var(--sub); text-align: center; line-height: 1.8;
+}
+.bottom-nav {
+  height: var(--nav-h); flex-shrink: 0;
+  background: var(--surface); border-top: 1px solid var(--border);
+  display: flex; align-items: stretch;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.nav-item {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 3px; cursor: pointer; border: none; background: none;
+  color: var(--muted); transition: color 0.15s;
+  font-family: var(--font); font-size: 10px; font-weight: 500;
+  letter-spacing: 0.3px; text-transform: uppercase;
+  -webkit-tap-highlight-color: transparent;
+}
+.nav-item:active { opacity: 0.6; }
+.nav-item.active { color: var(--accent); }
+.nav-icon { font-size: 20px; line-height: 1; }
+
+/* ── States ── */
+.state-box {
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; padding: 4rem 2rem; gap: 10px;
+  color: var(--muted); font-family: var(--mono); font-size: 13px;
+  text-align: center; line-height: 1.6;
+}
+.spinner {
+  width: 28px; height: 28px; border: 2px solid var(--border);
+  border-top-color: var(--accent); border-radius: 50%;
+  animation: spin 0.75s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.err-box {
+  margin: 12px 16px; padding: 12px 14px;
+  background: rgba(217,107,107,0.08); border: 1px solid var(--danger);
+  border-radius: var(--r); font-family: var(--mono); font-size: 12px;
+  color: var(--danger); line-height: 1.6;
+}
+
+/* ── Bottom sheet (color picker modal) ── */
+.sheet-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.6); z-index: 100;
+  align-items: flex-end; justify-content: center;
+}
+.sheet-overlay.open { display: flex; }
+.sheet {
+  width: 100%; max-width: 500px;
+  background: var(--raised); border-radius: 22px 22px 0 0;
+  border: 1px solid var(--border2); border-bottom: none;
+  padding: 0 0 calc(env(safe-area-inset-bottom) + 16px);
+  animation: slideSheet 0.25s cubic-bezier(0.32,0.72,0,1);
+}
+@keyframes slideSheet { from { transform: translateY(100%); } to { transform: translateY(0); } }
+.sheet-handle { width: 36px; height: 4px; background: var(--border2); border-radius: 2px; margin: 12px auto 0; }
+.sheet-name { font-size: 18px; font-weight: 600; padding: 14px 20px 4px; }
+.sheet-hint { font-size: 12px; color: var(--sub); font-family: var(--mono); padding: 0 20px 16px; }
+.sheet-colors {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 8px; padding: 0 16px 16px;
+}
+.sheet-color-btn {
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  padding: 14px 8px; border-radius: var(--r-lg);
+  border: 2px solid var(--border); background: var(--surface);
+  cursor: pointer; transition: all 0.15s; -webkit-tap-highlight-color: transparent;
+  position: relative;
+}
+.sheet-color-btn:active { transform: scale(0.95); }
+.sheet-color-btn.sel { border-color: var(--c); background: var(--surface); }
+.sheet-color-btn.sel::after {
+  content: '✓'; position: absolute; top: 6px; right: 8px;
+  font-size: 11px; font-weight: 700; color: var(--c);
+}
+.sc-circle { width: 36px; height: 36px; border-radius: 50%; }
+.sc-label { font-family: var(--mono); font-size: 11px; color: var(--sub); }
+.sheet-footer { display: flex; gap: 8px; padding: 0 16px; }
+.sheet-btn {
+  flex: 1; height: 46px; border-radius: var(--r-lg); border: 1.5px solid var(--border);
+  background: var(--surface); color: var(--text); font-family: var(--font);
+  font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.15s;
+}
+.sheet-btn:active { opacity: 0.7; }
+.sheet-btn.primary { background: var(--accent); color: #0a0b0d; border-color: var(--accent); }
+
+/* ── Toast ── */
+.toast {
+  position: fixed; bottom: calc(var(--nav-h) + 12px); left: 50%;
+  transform: translateX(-50%); z-index: 200;
+  background: var(--card); border: 1px solid var(--border2);
+  color: var(--text); font-family: var(--mono); font-size: 12px;
+  padding: 10px 18px; border-radius: 99px; white-space: nowrap;
+  animation: fadeInUp 0.2s ease;
+}
+.toast.err { border-color: var(--danger); color: var(--danger); background: rgba(217,107,107,0.1); }
+@keyframes fadeInUp { from { opacity:0; transform: translateX(-50%) translateY(8px); } to { opacity:1; transform: translateX(-50%) translateY(0); } }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 3px; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
 </style>
 </head>
 <body>
 <div class="app">
-  <header>
-    <div class="logo">Lorcana<span>Scout</span></div>
-    <div class="url-form">
-      <input id="urlInput" type="text" placeholder="https://tcg.ravensburgerplay.com/events/492131" />
-      <button class="btn primary" onclick="loadEvent()">Charger</button>
-      <button class="btn small" onclick="refreshEvent()" title="Rafraîchir">↻</button>
+
+  <!-- Header -->
+  <header class="app-header">
+    <div class="logo-mark">Scout<em>.</em></div>
+    <div class="event-id-form">
+      <div class="id-input-wrap">
+        <div class="id-prefix">events /</div>
+        <input id="idInput" type="number" inputmode="numeric" placeholder="492131" />
+      </div>
+      <button class="load-btn" onclick="loadEvent()">Go</button>
     </div>
-    <div id="wsBadge" class="ws-badge disconnected">WS off</div>
-    <div id="metaBar" class="event-meta" style="display:none"></div>
+    <div id="wsPill" class="ws-pill">●</div>
   </header>
 
-  <main>
-    <!-- Sidebar historique -->
-    <div class="sidebar">
-      <div class="sidebar-header">
-        <div class="sidebar-title">Historique</div>
-        <button class="sidebar-clear" onclick="clearHistory()">Vider</button>
+  <!-- Content -->
+  <div class="content">
+
+    <!-- PAIRINGS screen -->
+    <div class="screen active" id="screen-pairings">
+      <div class="screen-header">
+        <div>
+          <div class="screen-title">Pairings</div>
+          <div class="screen-sub" id="pairingsEventName">—</div>
+        </div>
       </div>
-      <div id="sidebarList" class="sidebar-list">
-        <div class="sidebar-empty">Aucun tournoi<br>chargé</div>
+      <div class="round-strip" id="roundStrip"></div>
+      <div class="scroll-area" id="pairingsScroll">
+        <div class="state-box">Charge un événement pour commencer</div>
       </div>
     </div>
 
-    <!-- Pairings -->
-    <div class="pairings-panel">
-      <div class="panel-header">
-        <div class="panel-title">Pairings</div>
-        <div class="round-nav">
-          <button class="nav-btn" id="prevBtn" onclick="changeRound(-1)" disabled>‹</button>
-          <div class="round-label" id="roundLabel">—</div>
-          <button class="nav-btn" id="nextBtn" onclick="changeRound(1)" disabled>›</button>
+    <!-- ROSTER screen -->
+    <div class="screen" id="screen-roster">
+      <div class="screen-header">
+        <div>
+          <div class="screen-title">Roster</div>
+          <div class="screen-sub" id="rosterCount">—</div>
         </div>
       </div>
-      <div id="pairingsContent" class="pairings-list">
-        <div class="empty-state">Entrez un lien d'événement pour commencer</div>
+      <div class="search-wrap">
+        <input class="search-input" id="searchInput" type="text" placeholder="Rechercher un joueur…" oninput="renderRoster()" />
+      </div>
+      <div class="scroll-area" id="rosterScroll">
+        <div class="state-box">Aucun joueur</div>
       </div>
     </div>
 
-    <!-- Right panel -->
-    <div class="right-panel">
-      <div class="tabs">
-        <button class="tab-btn active" onclick="switchTab('roster', this)">Roster</button>
-        <button class="tab-btn" onclick="switchTab('colors', this)">Couleurs</button>
-      </div>
-
-      <!-- Roster tab -->
-      <div class="tab-panel active" id="rosterTab">
-        <div class="search-bar">
-          <input id="searchInput" type="text" placeholder="Rechercher…" oninput="renderRoster()" />
-        </div>
-        <div id="rosterContent" class="list-scroll">
-          <div class="empty-state">Aucun joueur</div>
+    <!-- COLORS screen -->
+    <div class="screen" id="screen-colors">
+      <div class="screen-header">
+        <div>
+          <div class="screen-title">Couleurs</div>
+          <div class="screen-sub" id="colorsCount">—</div>
         </div>
       </div>
-
-      <!-- Colors listing tab -->
-      <div class="tab-panel" id="colorsTab">
-        <div class="color-listing" id="colorListingContent">
-          <div class="empty-state">Aucune couleur renseignée</div>
-        </div>
+      <div class="scroll-area" id="colorsScroll">
+        <div class="state-box">Aucune couleur renseignée</div>
       </div>
     </div>
-  </main>
+
+    <!-- HISTORY screen -->
+    <div class="screen" id="screen-history">
+      <div class="screen-header">
+        <div>
+          <div class="screen-title">Historique</div>
+          <div class="screen-sub">Tournois scouttés</div>
+        </div>
+      </div>
+      <div class="scroll-area" id="historyScroll">
+        <div class="state-box">Aucun tournoi chargé</div>
+      </div>
+    </div>
+
+    <!-- STANDINGS screen -->
+    <div class="screen" id="screen-standings">
+      <div class="screen-header">
+        <div>
+          <div class="screen-title">Standings</div>
+          <div class="screen-sub" id="standingsSub">—</div>
+        </div>
+        <button class="standings-refresh" onclick="loadStandings()">↻ Refresh</button>
+      </div>
+      <div class="standings-filter" id="standingsFilter">
+        <div class="filter-chip active" data-filter="favs" onclick="setStandingsFilter('favs',this)">⭐ Favoris</div>
+        <div class="filter-chip" data-filter="all" onclick="setStandingsFilter('all',this)">Tous</div>
+      </div>
+      <div class="scroll-area" id="standingsScroll">
+        <div class="state-box">Charge un événement pour commencer</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Bottom nav -->
+  <nav class="bottom-nav">
+    <button class="nav-item active" data-screen="pairings" onclick="switchScreen('pairings',this)">
+      <div class="nav-icon">⚔️</div>Pairings
+    </button>
+    <button class="nav-item" data-screen="roster" onclick="switchScreen('roster',this)">
+      <div class="nav-icon">👥</div>Roster
+    </button>
+    <button class="nav-item" data-screen="colors" onclick="switchScreen('colors',this)">
+      <div class="nav-icon">🎨</div>Couleurs
+    </button>
+    <button class="nav-item" data-screen="standings" onclick="switchScreen('standings',this)">
+      <div class="nav-icon">🏆</div>Standings
+    </button>
+    <button class="nav-item" data-screen="history" onclick="switchScreen('history',this)">
+      <div class="nav-icon">🕐</div>Historique
+    </button>
+  </nav>
+
 </div>
 
-<!-- Modal -->
-<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
-  <div class="modal">
-    <div class="modal-name" id="modalName"></div>
-    <div class="modal-sub" id="modalSub">Sélectionne les couleurs du deck</div>
-    <div class="modal-note" id="modalNote"></div>
-    <div class="color-options" id="colorOptions"></div>
-    <div class="modal-actions">
-      <button class="btn small" onclick="clearAndSave()">Effacer</button>
-      <button class="btn small primary" onclick="saveModal()">Valider</button>
+<!-- Bottom sheet (color picker) -->
+<div class="sheet-overlay" id="sheetOverlay" onclick="closeSheet(event)">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-name" id="sheetName"></div>
+    <div class="sheet-hint" id="sheetHint">Sélectionne jusqu'à 2 couleurs</div>
+    <div class="sheet-colors" id="sheetColors"></div>
+    <div class="sheet-footer">
+      <button class="sheet-btn" onclick="clearSheet()">Effacer</button>
+      <button class="sheet-btn primary" onclick="saveSheet()">Valider</button>
     </div>
   </div>
 </div>
@@ -297,30 +530,25 @@
 <script>
 // ── Config ───────────────────────────────────────────────────────────────────
 const IS_LOCAL = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
-const SERVER = IS_LOCAL ? 'http://localhost:3001' : `${location.protocol}//${location.host}`;
-
-const WS_URL  = IS_LOCAL
-  ? 'ws://localhost:3001'
-  : (location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host;
+const SERVER   = IS_LOCAL ? 'http://localhost:3001' : `${location.protocol}//${location.host}`;
+const WS_URL   = IS_LOCAL ? 'ws://localhost:3001'
+               : (location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host;
 
 const COLORS = [
-  { id: 'amber',     label: 'Ambre',      hex: '#E9A326' },
-  { id: 'amethyst',  label: 'Améthyste',  hex: '#9B59B6' },
-  { id: 'emerald',   label: 'Émeraude',   hex: '#27AE60' },
-  { id: 'ruby',      label: 'Rubis',      hex: '#C0392B' },
-  { id: 'sapphire',  label: 'Saphir',     hex: '#2980B9' },
-  { id: 'steel',     label: 'Acier',      hex: '#7F8C8D' },
+  { id:'amber',     label:'Ambre',      hex:'#E9A326' },
+  { id:'amethyst',  label:'Améthyste',  hex:'#9B59B6' },
+  { id:'emerald',   label:'Émeraude',   hex:'#27AE60' },
+  { id:'ruby',      label:'Rubis',      hex:'#C0392B' },
+  { id:'sapphire',  label:'Saphir',     hex:'#2980B9' },
+  { id:'steel',     label:'Acier',      hex:'#7F8C8D' },
 ];
 
 // ── State ────────────────────────────────────────────────────────────────────
-let state = {
-  eventId: null,
-  meta: null,
-  players: {},     // { name: { colors: [] } }
-  rounds: [],
-  currentRound: 0,
-  editingPlayer: null,
-  tempColors: [],
+let S = {
+  eventId: null, meta: null,
+  players: {}, rounds: [], currentRound: 0,
+  sheetPlayer: null, sheetColors: [],
+  activeScreen: 'pairings',
 };
 let ws = null;
 
@@ -328,432 +556,450 @@ let ws = null;
 function connectWS() {
   if (ws) ws.close();
   ws = new WebSocket(WS_URL);
-  ws.onopen = () => setBadge(true);
-  ws.onclose = () => { setBadge(false); setTimeout(connectWS, 3000); };
+  ws.onopen  = () => setPill(true);
+  ws.onclose = () => { setPill(false); setTimeout(connectWS, 3000); };
   ws.onmessage = e => {
-    const data = JSON.parse(e.data);
-    if (data.type === 'playerUpdate' && data.eventId === state.eventId) {
-      if (!state.players[data.player]) state.players[data.player] = {};
-      state.players[data.player].colors = data.colors;
+    const d = JSON.parse(e.data);
+    if (d.type === 'playerUpdate' && d.eventId === S.eventId) {
+      if (!S.players[d.player]) S.players[d.player] = {};
+      S.players[d.player].colors = d.colors;
       renderAll();
     }
   };
 }
-
-function setBadge(on) {
-  const b = document.getElementById('wsBadge');
-  b.textContent = on ? '● live' : 'WS off';
-  b.className = 'ws-badge ' + (on ? 'connected' : 'disconnected');
+function setPill(on) {
+  const p = document.getElementById('wsPill');
+  p.textContent = on ? '● live' : '●';
+  p.className = 'ws-pill' + (on ? ' on' : '');
 }
 
-// ── Load event ───────────────────────────────────────────────────────────────
-async function loadEvent(refresh = false) {
-  const url = document.getElementById('urlInput').value.trim();
-  const match = url.match(/events\/(\d+)/);
-  if (!match) { return showToast('URL invalide', true); }
+// ── Load event ────────────────────────────────────────────────────────────────
+async function loadEvent(idOverride) {
+  const raw = idOverride || document.getElementById('idInput').value.trim();
+  // Accept full URL or just ID
+  const match = String(raw).match(/(\d{4,8})/);
+  if (!match) return showToast('ID invalide', true);
   const id = match[1];
-  state.eventId = id;
+  S.eventId = id;
+  document.getElementById('idInput').value = id;
+  document.getElementById('idInput').blur();
 
-  setPairingsContent(`<div class="loading-state"><div class="spinner"></div><span>Chargement du tournoi…</span></div>`);
+  setScroll('pairings', `<div class="state-box"><div class="spinner"></div><span>Chargement…</span></div>`);
+  switchScreen('pairings', document.querySelector('[data-screen="pairings"]'));
 
   try {
-    const res = await fetch(`${SERVER}/api/events/${id}${refresh ? '?refresh=1' : ''}`);
-    if (!res.ok) throw new Error(`Serveur: ${res.status}`);
-    const data = await res.json();
-    applyEventData(data);
+    const res = await fetch(`${SERVER}/api/events/${id}`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    applyData(await res.json());
   } catch(err) {
-    setPairingsContent(`<div class="error-banner">Erreur: ${err.message}<br>Le serveur tourne-t-il sur localhost:3001 ?</div>`);
+    setScroll('pairings', `<div class="err-box">Erreur: ${err.message}<br>Le serveur tourne-t-il ?</div>`);
   }
 }
 
-function refreshEvent() { loadEvent(true); }
-
-// ── Historique localStorage ───────────────────────────────────────────────────
-const HISTORY_KEY = 'lorcana-scout-history';
-
-function getHistory() {
-  try { return JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]'); } catch { return []; }
-}
-
-function saveHistory(history) {
-  localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
-}
-
-function addToHistory(eventId, meta, playerCount, scoutedCount) {
-  const history = getHistory().filter(e => e.id !== eventId);
-  history.unshift({
-    id: eventId,
-    name: meta?.title || `Tournoi #${eventId}`,
-    location: meta?.location || '',
-    players: playerCount,
-    scouted: scoutedCount,
-    loadedAt: Date.now(),
-  });
-  saveHistory(history.slice(0, 20)); // max 20 entrées
-  renderSidebar();
-}
-
-function updateHistoryScout(eventId, scoutedCount) {
-  const history = getHistory();
-  const entry = history.find(e => e.id === eventId);
-  if (entry) { entry.scouted = scoutedCount; saveHistory(history); renderSidebar(); }
-}
-
-function clearHistory() {
-  if (confirm('Vider tout l\'historique ?')) { localStorage.removeItem(HISTORY_KEY); renderSidebar(); }
-}
-
-function renderSidebar() {
-  const history = getHistory();
-  const el = document.getElementById('sidebarList');
-  if (!history.length) {
-    el.innerHTML = '<div class="sidebar-empty">Aucun tournoi<br>chargé</div>';
-    return;
-  }
-  el.innerHTML = history.map(e => `
-    <div class="sidebar-event${state.eventId === e.id ? ' active' : ''}" data-eid="${e.id}">
-      <div class="se-id">#${e.id}</div>
-      <div class="se-name">${esc(e.name)}</div>
-      <div class="se-meta">
-        <span>${e.players || 0}j</span>
-        ${e.scouted ? `<span class="se-scouted">${e.scouted} scouttés</span>` : ''}
-      </div>
-    </div>`).join('');
-}
-
-document.addEventListener('click', e => {
-  const se = e.target.closest('.sidebar-event');
-  if (!se) return;
-  const eid = se.dataset.eid;
-  if (eid && eid !== state.eventId) {
-    document.getElementById('urlInput').value = `https://tcg.ravensburgerplay.com/events/${eid}`;
-    loadEvent();
-  }
-});
-
-function applyEventData(data) {
-  state.meta = data.meta;
-  state.players = data.players || {};
-  state.rounds = data.rounds || [];
-  state.currentRound = 0;
-
-  const playerCount = Object.keys(state.players).length;
-  const scoutedCount = Object.values(state.players).filter(p => p.colors?.length > 0).length;
-
-  const meta = document.getElementById('metaBar');
-  if (data.meta) {
-    meta.style.display = 'flex';
-    meta.innerHTML = `<span>${data.meta.title || ''}</span><span>${data.meta.location || ''}</span><span><b>${playerCount}</b> joueurs</span>`;
-  }
-
-  addToHistory(state.eventId, data.meta, playerCount, scoutedCount);
+function applyData(data) {
+  S.meta    = data.meta;
+  S.players = data.players || {};
+  S.rounds  = data.rounds  || [];
+  S.currentRound = 0;
+  standingsData = []; // reset standings when event changes
+  const pc = Object.keys(S.players).length;
+  const sc = Object.values(S.players).filter(p=>p.colors?.length>0).length;
+  localStorage.setItem('lorcana-last-event', S.eventId);
+  addHistory(S.eventId, data.meta, pc, sc);
   renderAll();
   connectWS();
 }
 
-// ── Render ───────────────────────────────────────────────────────────────────
+// ── Render all ────────────────────────────────────────────────────────────────
 function renderAll() {
-  renderPairings();
-  renderRoster();
-  renderColorListing();
-  // Mettre à jour le compteur de scouttés dans la sidebar
-  if (state.eventId) {
-    const scoutedCount = Object.values(state.players).filter(p => p.colors?.length > 0).length;
-    updateHistoryScout(state.eventId, scoutedCount);
+  renderPairings(); renderRoster(); renderColors(); renderStandings();
+  if (S.eventId) {
+    const sc = Object.values(S.players).filter(p=>p.colors?.length>0).length;
+    updateHistoryScout(S.eventId, sc);
   }
 }
 
+// ── Pairings ─────────────────────────────────────────────────────────────────
 function renderPairings() {
-  const round = state.rounds[state.currentRound];
-  document.getElementById('prevBtn').disabled = state.currentRound <= 0;
-  document.getElementById('nextBtn').disabled = state.currentRound >= state.rounds.length - 1;
+  const name = S.meta?.title || (S.eventId ? `Tournoi #${S.eventId}` : '—');
+  document.getElementById('pairingsEventName').textContent = name;
 
+  // Round chips
+  const strip = document.getElementById('roundStrip');
+  if (S.rounds.length) {
+    strip.innerHTML = S.rounds.map((r,i) =>
+      `<div class="round-chip${i===S.currentRound?' active':''}" onclick="setRound(${i})">R${r.num}</div>`
+    ).join('');
+  } else {
+    strip.innerHTML = '';
+  }
+
+  const round = S.rounds[S.currentRound];
   if (!round) {
-    document.getElementById('roundLabel').textContent = '—';
-    if (state.eventId) {
-      setPairingsContent(`<div class="empty-state">Pas de pairings disponibles<br>(tournoi terminé ou en attente)</div>`);
-    }
+    setScroll('pairings', `<div class="state-box">Pas de pairings disponibles<br>pour ce tournoi</div>`);
     return;
   }
 
-  document.getElementById('roundLabel').textContent = `Ronde ${round.num}`;
-
   const html = round.pairings.map(p => {
-    const isBye2 = p.p2 === 'BYE' || !p.p2;
-    return `
-      <div class="pairing-card">
-        <div class="table-num">${p.table}</div>
-        ${playerCell(p.p1)}
-        <div class="vs-divider">vs</div>
-        ${isBye2 ? `<div class="player-cell"><div class="p-name bye">BYE</div></div>` : playerCell(p.p2)}
-      </div>`;
+    const bye2 = !p.p2 || p.p2 === 'BYE';
+    return `<div class="pairing-card">
+      <div class="pairing-inner">
+        ${playerSlot(p.p1, false)}
+        <div class="vs-col">
+          <div class="table-n">T${p.table}</div>
+          <div style="color:var(--border2);font-size:14px">⚔</div>
+        </div>
+        ${bye2 ? `<div class="player-slot right"><div class="ps-name bye">BYE</div></div>` : playerSlot(p.p2, true)}
+      </div>
+    </div>`;
   }).join('');
 
-  setPairingsContent(html || '<div class="empty-state">Aucun pairing</div>');
+  setScroll('pairings', html || '<div class="state-box">Aucun pairing</div>');
 }
 
-function playerCell(name) {
-  const p = state.players[name] || { colors: [] };
-  const hasColors = p.colors && p.colors.length > 0;
-  const dots = (p.colors || []).map(cid => {
-    const c = COLORS.find(x => x.id === cid);
-    return c ? `<div class="dot" style="background:${c.hex}" title="${c.label}"></div>` : '';
+function playerSlot(name, isRight) {
+  const p = S.players[name] || {colors:[]};
+  const sc = p.colors?.length > 0;
+  const dots = (p.colors||[]).map(cid => {
+    const c = COLORS.find(x=>x.id===cid);
+    return c ? `<div class="cdot" style="background:${c.hex}" title="${c.label}"></div>` : '';
   }).join('');
-  return `<div class="player-cell${hasColors ? ' has-colors' : ''}" onclick="openModal(${JSON.stringify(name)})">
-    <div class="p-name">${esc(name)}</div>
-    <div class="p-colors">${dots}</div>
+  return `<div class="player-slot${isRight?' right':''}${sc?' scouted':''}" data-open-sheet="${esc(name)}">
+    <div class="ps-name">${esc(name)}</div>
+    <div class="ps-colors">${dots}</div>
   </div>`;
 }
 
+function setRound(i) {
+  S.currentRound = i;
+  renderPairings();
+}
+
+// ── Roster ───────────────────────────────────────────────────────────────────
+function favsKey() { return `lorcana-favs-${S.eventId||'_'}`; }
+function getFavs() { try { return JSON.parse(localStorage.getItem(favsKey())||'[]'); } catch { return []; } }
+function saveFavs(f) { localStorage.setItem(favsKey(), JSON.stringify(f)); }
+function isFav(name) { return getFavs().includes(name); }
+function toggleFav(name) {
+  const favs = getFavs();
+  const idx = favs.indexOf(name);
+  if (idx>=0) favs.splice(idx,1); else favs.push(name);
+  saveFavs(favs);
+  renderRoster();
+  renderStandings();
+}
+
 function renderRoster() {
-  const q = (document.getElementById('searchInput')?.value || '').toLowerCase();
-  const entries = Object.entries(state.players)
-    .filter(([n]) => n.toLowerCase().includes(q))
-    .sort(([a],[b]) => a.localeCompare(b));
+  const pc = Object.keys(S.players).length;
+  const sc = Object.values(S.players).filter(p=>p.colors?.length>0).length;
+  document.getElementById('rosterCount').textContent =
+    pc ? `${pc} joueurs · ${sc} scouttés` : '—';
+
+  const q = (document.getElementById('searchInput')?.value||'').toLowerCase();
+  const entries = Object.entries(S.players)
+    .filter(([n])=>n.toLowerCase().includes(q))
+    .sort(([a],[b])=>a.localeCompare(b));
 
   if (!entries.length) {
-    document.getElementById('rosterContent').innerHTML = '<div class="empty-state">Aucun joueur</div>';
+    setScroll('roster', '<div class="state-box">Aucun joueur</div>');
     return;
   }
 
   const html = entries.map(([name, data]) => {
-    const playerColors = data.colors || [];
-    const dots = playerColors.map(cid => {
-      const c = COLORS.find(x => x.id === cid);
-      return c ? `<div class="r-dot" style="background:${c.hex}" title="${c.label}"></div>` : '';
+    const colors = data.colors||[];
+    const sc = colors.length > 0;
+    const fav = isFav(name);
+    const dots = colors.map(cid=>{
+      const c=COLORS.find(x=>x.id===cid);
+      return c?`<div class="rc-dot" style="background:${c.hex}"></div>`:'';
     }).join('');
-    const hasColors = playerColors.length > 0;
-
-    const colorBtns = COLORS.map(c => {
-      const isSel = playerColors.includes(c.id);
-      return `<div class="inline-color-btn${isSel ? ' sel' : ''}" style="${isSel ? `color:${c.hex}` : ''}" data-action="color" data-color="${c.id}">
-        <div class="inline-dot" style="background:${c.hex}"></div>${c.label}
-      </div>`;
-    }).join('');
-
-    const safeId = btoa(unescape(encodeURIComponent(name))).replace(/[^a-zA-Z0-9]/g, '_');
-    return `<div class="roster-row${hasColors ? ' has-colors' : ''}" id="rr-${safeId}" data-player="${esc(name)}">
-      <div class="roster-row-top" data-action="toggle">
-        <div class="r-name">${esc(name)}</div>
-        <div class="r-colors">${dots}</div>
-        <div class="r-chevron">▾</div>
-      </div>
-      <div class="roster-inline-picker">
-        ${colorBtns}
-        ${hasColors ? `<div class="inline-clear" data-action="clear">Effacer</div>` : ''}
+    const safeId = btoa(unescape(encodeURIComponent(name))).replace(/[^a-zA-Z0-9]/g,'_');
+    const starSvg = fav
+      ? `<svg width="18" height="18" viewBox="0 0 24 24" fill="var(--accent)" stroke="var(--accent)" stroke-width="1.5"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>`
+      : `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.5"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>`;
+    return `<div class="roster-row${sc?' scouted':''}" id="rr-${safeId}" data-player="${esc(name)}">
+      <div class="roster-top" data-action="open-sheet">
+        <button class="fav-btn${fav?' on':''}" title="Favori" onclick="event.stopPropagation();toggleFav(this.closest('.roster-row').dataset.player)">${starSvg}</button>
+        <div class="rn">${esc(name)}</div>
+        <div class="rc">${dots}</div>
       </div>
     </div>`;
   }).join('');
-
-  document.getElementById('rosterContent').innerHTML = html;
+  setScroll('roster', html);
 }
 
-// ── Roster event delegation (évite les problèmes de caractères spéciaux dans onclick) ──
-document.addEventListener('click', async function(e) {
+// Roster delegation
+document.addEventListener('click', async e => {
+  // Sheet from pairings / colors listing
+  const slotEl = e.target.closest('[data-open-sheet]');
+  if (slotEl) { openSheet(slotEl.dataset.openSheet); return; }
+
+  // Roster actions
   const row = e.target.closest('.roster-row');
   if (!row) return;
   const name = row.dataset.player;
   if (!name) return;
-
   const action = e.target.closest('[data-action]')?.dataset.action;
   if (!action) return;
   e.stopPropagation();
 
-  if (action === 'toggle') {
-    const wasExpanded = row.classList.contains('expanded');
-    document.querySelectorAll('.roster-row.expanded').forEach(r => r.classList.remove('expanded'));
-    if (!wasExpanded) row.classList.add('expanded');
-    return;
-  }
-
-  if (action === 'color') {
-    const colorId = e.target.closest('[data-color]')?.dataset.color;
-    if (!colorId) return;
-    if (!state.players[name]) state.players[name] = { colors: [] };
-    const colors = [...(state.players[name].colors || [])];
-    const idx = colors.indexOf(colorId);
-    if (idx >= 0) colors.splice(idx, 1);
-    else if (colors.length < 2) colors.push(colorId);
-    else { colors.shift(); colors.push(colorId); }
-    state.players[name].colors = colors;
-
-    const safeId = btoa(unescape(encodeURIComponent(name))).replace(/[^a-zA-Z0-9]/g, '_');
-    renderRoster();
-    renderColorListing();
-    const newRow = document.getElementById(`rr-${safeId}`);
-    if (newRow) newRow.classList.add('expanded');
-
-    try {
-      await fetch(`${SERVER}/api/events/${state.eventId}/players/${encodeURIComponent(name)}`, {
-        method: 'PATCH', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ colors }),
-      });
-    } catch(e) {}
-    return;
-  }
-
-  if (action === 'clear') {
-    if (!state.players[name]) return;
-    state.players[name].colors = [];
-    const safeId = btoa(unescape(encodeURIComponent(name))).replace(/[^a-zA-Z0-9]/g, '_');
-    renderRoster();
-    renderColorListing();
-    const newRow = document.getElementById(`rr-${safeId}`);
-    if (newRow) newRow.classList.add('expanded');
-    try {
-      await fetch(`${SERVER}/api/events/${state.eventId}/players/${encodeURIComponent(name)}`, {
-        method: 'PATCH', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ colors: [] }),
-      });
-    } catch(e) {}
-  }
+  if (action === 'open-sheet') { openSheet(name); return; }
+  if (action === 'fav') { toggleFav(name); return; }
 });
 
-function renderColorListing() {
-  // Group by color combo
-  const withColors = Object.entries(state.players)
-    .filter(([, d]) => d.colors && d.colors.length > 0)
-    .sort(([a],[b]) => a.localeCompare(b));
+async function patchColors(name, colors) {
+  if (!S.players[name]) S.players[name]={};
+  S.players[name].colors = colors;
+  renderAll();
+  try {
+    await fetch(`${SERVER}/api/events/${S.eventId}/players/${encodeURIComponent(name)}`, {
+      method:'PATCH', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({colors}),
+    });
+  } catch(e) {}
+}
 
-  if (!withColors.length) {
-    document.getElementById('colorListingContent').innerHTML = '<div class="empty-state">Aucune couleur renseignée</div>';
+// ── Standings ─────────────────────────────────────────────────────────────────
+let standingsData = [];       // raw from server
+let standingsFilter = 'favs'; // 'favs' | 'all'
+
+async function loadStandings() {
+  if (!S.eventId) return;
+  setScroll('standings', `<div class="state-box"><div class="spinner"></div><span>Chargement standings…</span></div>`);
+  try {
+    const res = await fetch(`${SERVER}/api/events/${S.eventId}/standings`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    standingsData = await res.json();
+    renderStandings();
+  } catch(err) {
+    setScroll('standings', `<div class="err-box">Impossible de charger les standings.<br>${err.message}</div>`);
+  }
+}
+
+function setStandingsFilter(f, el) {
+  standingsFilter = f;
+  document.querySelectorAll('.filter-chip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  renderStandings();
+}
+
+function renderStandings() {
+  if (!S.eventId) {
+    setScroll('standings', `<div class="state-box">Charge un événement pour commencer</div>`);
     return;
   }
 
-  // Group by sorted combo key
-  const groups = {};
-  withColors.forEach(([name, data]) => {
-    const key = [...data.colors].sort().join('+');
-    if (!groups[key]) groups[key] = { colors: data.colors, players: [] };
-    groups[key].players.push(name);
-  });
+  const favs = getFavs();
+  let data = standingsData;
 
-  const sortedGroups = Object.entries(groups).sort(([,a],[,b]) => b.players.length - a.players.length);
+  // Update sub title
+  const sub = data.length ? `Ronde ${data[0]?.round || '?'} · ${data.length} joueurs` : (S.eventId ? `Tournoi #${S.eventId}` : '—');
+  document.getElementById('standingsSub').textContent = sub;
 
-  const html = sortedGroups.map(([key, group]) => {
-    const dots = group.colors.map(cid => {
-      const c = COLORS.find(x => x.id === cid);
-      return c ? `<div class="dot" style="background:${c.hex};width:12px;height:12px"></div>` : '';
-    }).join('');
-    const labels = group.colors.map(cid => COLORS.find(x => x.id === cid)?.label || cid).join(' + ');
-    const playerRows = group.players.map(name =>
-      `<div class="cl-player" onclick="openModal(${JSON.stringify(name)})">
-        <div class="cl-player-name">${esc(name)}</div>
-      </div>`
-    ).join('');
-    return `<div class="cl-group">
-      <div class="cl-combo-header">${dots} ${labels} <span style="margin-left:auto">${group.players.length}x</span></div>
-      ${playerRows}
-    </div>`;
+  if (standingsFilter === 'favs') {
+    if (!favs.length) {
+      setScroll('standings', `<div class="standings-no-favs">Aucun favori.<br>Ajoute des joueurs en favori<br>depuis l'onglet <b>Roster</b> avec ⭐</div>`);
+      return;
+    }
+    if (!data.length) {
+      // Show favs with no ranking data
+      setScroll('standings', favs.map(name => standingCard(name, null, favs)).join('') );
+      return;
+    }
+    data = data.filter(s => favs.includes(s.name));
+    if (!data.length) {
+      setScroll('standings', `<div class="standings-no-favs">Aucun de tes favoris<br>n'apparaît dans ce standings.</div>`);
+      return;
+    }
+  }
+
+  if (!data.length) {
+    setScroll('standings', `<div class="state-box">Pas de standings disponibles.<br><span style="font-size:11px;line-height:1.8">Les standings ne sont accessibles<br>que pendant un tournoi en cours.<br>Appuie sur ↻ Refresh en cours de ronde.</span></div>`);
+    return;
+  }
+
+  setScroll('standings', data.map(s => standingCard(s.name, s, favs)).join(''));
+}
+
+function standingCard(name, s, favs) {
+  const isFavPlayer = favs.includes(name);
+  const p = S.players[name] || {colors:[]};
+  const dots = (p.colors||[]).map(cid=>{
+    const c = COLORS.find(x=>x.id===cid);
+    return c ? `<div class="cdot" style="background:${c.hex};width:11px;height:11px"></div>` : '';
   }).join('');
 
-  document.getElementById('colorListingContent').innerHTML = html;
+  const rank = s?.rank ?? '—';
+  const pts  = s?.points ?? '—';
+  const rec  = s ? `${s.wins||0}W-${s.losses||0}L${s.draws?'-'+s.draws+'D':''}` : '';
+  const rankClass = rank===1?'rank-top1':rank===2?'rank-top2':rank===3?'rank-top3':'';
+
+  return `<div class="standing-card${isFavPlayer?' fav':''}" data-open-sheet="${esc(name)}">
+    <div class="standing-rank">
+      <div class="rank-num ${rankClass}">${rank}</div>
+    </div>
+    <div class="standing-body">
+      <div class="standing-name">${esc(name)}</div>
+      <div class="standing-stats">
+        ${rec ? `<span>${rec}</span>` : ''}
+        ${dots ? `<div class="standing-colors">${dots}</div>` : ''}
+      </div>
+    </div>
+    <div class="standing-right">
+      <div class="standing-pts">${pts}</div>
+      <div class="standing-pts-label">pts</div>
+    </div>
+  </div>`;
 }
 
-// ── Round nav ────────────────────────────────────────────────────────────────
-function changeRound(d) {
-  state.currentRound = Math.max(0, Math.min(state.rounds.length - 1, state.currentRound + d));
-  renderPairings();
-}
+// ── Colors listing ────────────────────────────────────────────────────────────
+function renderColors() {
+  const withColors = Object.entries(S.players)
+    .filter(([,d])=>d.colors&&d.colors.length>0)
+    .sort(([a],[b])=>a.localeCompare(b));
+  const sc = withColors.length;
+  document.getElementById('colorsCount').textContent = sc ? `${sc} joueurs scouttés` : '—';
 
-// ── Modal ────────────────────────────────────────────────────────────────────
-function openModal(name) {
-  state.editingPlayer = name;
-  state.tempColors = [...(state.players[name]?.colors || [])];
-  document.getElementById('modalName').textContent = name;
-
-  const existing = state.players[name]?.colors || [];
-  document.getElementById('modalNote').textContent =
-    existing.length ? `Actuel: ${existing.map(id => COLORS.find(c=>c.id===id)?.label||id).join(' + ')}` : '';
-
-  renderModalColors();
-  document.getElementById('modalOverlay').classList.add('open');
-}
-
-function renderModalColors() {
-  document.getElementById('colorOptions').innerHTML = COLORS.map(c => `
-    <div class="color-opt" onclick="toggleColor('${c.id}')">
-      <div class="color-swatch${state.tempColors.includes(c.id) ? ' selected' : ''}" id="sw-${c.id}" style="background:${c.hex}"></div>
-      <div class="color-name">${c.label}</div>
-    </div>`).join('');
-}
-
-function toggleColor(id) {
-  const idx = state.tempColors.indexOf(id);
-  if (idx >= 0) {
-    state.tempColors.splice(idx, 1);
-  } else if (state.tempColors.length < 2) {
-    state.tempColors.push(id);
-  } else {
-    // Replace the oldest
-    state.tempColors.shift();
-    state.tempColors.push(id);
+  if (!withColors.length) {
+    setScroll('colors', '<div class="state-box">Aucune couleur renseignée</div>');
+    return;
   }
-  renderModalColors();
-}
-
-function clearAndSave() {
-  state.tempColors = [];
-  saveModal();
-}
-
-async function saveModal() {
-  const name = state.editingPlayer;
-  document.getElementById('modalOverlay').classList.remove('open');
-  if (!name || !state.eventId) return;
-
-  // Optimistic update
-  if (!state.players[name]) state.players[name] = {};
-  state.players[name].colors = [...state.tempColors];
-  renderAll();
-
-  try {
-    await fetch(`${SERVER}/api/events/${state.eventId}/players/${encodeURIComponent(name)}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ colors: state.tempColors }),
-    });
-  } catch(e) {
-    showToast('Hors ligne — changement local uniquement', true);
-  }
-}
-
-function closeModal(e) {
-  if (e.target === document.getElementById('modalOverlay')) {
-    document.getElementById('modalOverlay').classList.remove('open');
-  }
-}
-
-// ── Tabs ─────────────────────────────────────────────────────────────────────
-function switchTab(tab, el) {
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-  el.classList.add('active');
-  document.getElementById(tab + 'Tab').classList.add('active');
-  if (tab === 'colors') renderColorListing();
-}
-
-// ── Utils ────────────────────────────────────────────────────────────────────
-function setPairingsContent(html) { document.getElementById('pairingsContent').innerHTML = html; }
-function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-
-function showToast(msg, err = false) {
-  const t = document.createElement('div');
-  Object.assign(t.style, {
-    position:'fixed', bottom:'20px', left:'50%', transform:'translateX(-50%)',
-    background: err ? '#3a1515' : '#1a2a1a', border: `1px solid ${err ? '#c87e7e' : '#7ec87e'}`,
-    color: err ? '#c87e7e' : '#7ec87e', padding: '8px 16px',
-    borderRadius: '8px', fontFamily: "'DM Mono', monospace", fontSize: '12px',
-    zIndex: '9999', animation: 'slideUp 0.2s ease',
+  const groups = {};
+  withColors.forEach(([name,data])=>{
+    const key=[...data.colors].sort().join('+');
+    if (!groups[key]) groups[key]={colors:data.colors, players:[]};
+    groups[key].players.push(name);
   });
+  const sorted = Object.entries(groups).sort(([,a],[,b])=>b.players.length-a.players.length);
+  const html = sorted.map(([,g])=>{
+    const dots = g.colors.map(cid=>{
+      const c=COLORS.find(x=>x.id===cid);
+      return c?`<div class="cdot" style="background:${c.hex};width:12px;height:12px"></div>`:'';
+    }).join('');
+    const labels = g.colors.map(cid=>COLORS.find(x=>x.id===cid)?.label||cid).join(' + ');
+    const players = g.players.map(n=>
+      `<div class="combo-player" data-open-sheet="${esc(n)}">${esc(n)}</div>`
+    ).join('');
+    return `<div class="combo-group">
+      <div class="combo-header">${dots}<span>${labels}</span><span class="combo-count">${g.players.length}×</span></div>
+      <div class="combo-players">${players}</div>
+    </div>`;
+  }).join('');
+  setScroll('colors', html);
+}
+
+// ── Bottom sheet ──────────────────────────────────────────────────────────────
+function openSheet(name) {
+  S.sheetPlayer = name;
+  S.sheetColors = [...(S.players[name]?.colors||[])];
+  document.getElementById('sheetName').textContent = name;
+  renderSheet();
+  document.getElementById('sheetOverlay').classList.add('open');
+}
+function renderSheet() {
+  document.getElementById('sheetHint').textContent =
+    S.sheetColors.length ? `Sélectionné: ${S.sheetColors.map(id=>COLORS.find(c=>c.id===id)?.label||id).join(' + ')}` :
+    'Sélectionne jusqu\'à 2 couleurs';
+  document.getElementById('sheetColors').innerHTML = COLORS.map(c=>{
+    const sel = S.sheetColors.includes(c.id);
+    return `<div class="sheet-color-btn${sel?' sel':''}" style="--c:${c.hex}" onclick="toggleSheet('${c.id}')">
+      <div class="sc-circle" style="background:${c.hex}"></div>
+      <div class="sc-label">${c.label}</div>
+    </div>`;
+  }).join('');
+}
+function toggleSheet(id) {
+  const idx = S.sheetColors.indexOf(id);
+  if (idx>=0) S.sheetColors.splice(idx,1);
+  else if (S.sheetColors.length<2) S.sheetColors.push(id);
+  else { S.sheetColors.shift(); S.sheetColors.push(id); }
+  renderSheet();
+}
+function clearSheet() { S.sheetColors=[]; saveSheet(); }
+async function saveSheet() {
+  document.getElementById('sheetOverlay').classList.remove('open');
+  if (!S.sheetPlayer || !S.eventId) return;
+  await patchColors(S.sheetPlayer, [...S.sheetColors]);
+}
+function closeSheet(e) {
+  if (e.target===document.getElementById('sheetOverlay'))
+    document.getElementById('sheetOverlay').classList.remove('open');
+}
+
+// ── History ───────────────────────────────────────────────────────────────────
+const HKEY = 'lorcana-scout-history';
+function getHistory() { try { return JSON.parse(localStorage.getItem(HKEY)||'[]'); } catch { return []; } }
+function saveHistory(h) { localStorage.setItem(HKEY, JSON.stringify(h)); }
+
+function addHistory(id, meta, pc, sc) {
+  const h = getHistory().filter(e=>e.id!==id);
+  h.unshift({ id, name: meta?.title||`Tournoi #${id}`, location: meta?.location||'', players:pc, scouted:sc, at:Date.now() });
+  saveHistory(h.slice(0,20));
+  renderHistory();
+}
+function updateHistoryScout(id, sc) {
+  const h = getHistory();
+  const e = h.find(x=>x.id===id);
+  if (e) { e.scouted=sc; saveHistory(h); renderHistory(); }
+}
+function renderHistory() {
+  const h = getHistory();
+  const el = document.getElementById('historyScroll');
+  if (!h.length) { el.innerHTML='<div class="state-box">Aucun tournoi chargé</div>'; return; }
+  el.innerHTML = h.map(e=>`
+    <div class="history-item${S.eventId===e.id?' current':''}" onclick="loadEvent('${e.id}')">
+      <div class="hi-id">#${e.id}</div>
+      <div class="hi-name">${esc(e.name)}</div>
+      <div class="hi-meta">
+        <span>${e.players||0} joueurs</span>
+        ${e.scouted?`<span class="hi-scouted">↳ ${e.scouted} scouttés</span>`:''}
+      </div>
+    </div>`).join('')
+  + `<button class="hi-clear-btn" onclick="clearHistory()">🗑 Vider l'historique</button>`;
+}
+function clearHistory() {
+  if (confirm('Vider l\'historique ?')) { localStorage.removeItem(HKEY); renderHistory(); }
+}
+
+// ── Screens ───────────────────────────────────────────────────────────────────
+function switchScreen(name, btn) {
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));
+  document.getElementById(`screen-${name}`).classList.add('active');
+  if (btn) btn.classList.add('active');
+  S.activeScreen = name;
+  if (name==='colors') renderColors();
+  if (name==='history') renderHistory();
+  if (name==='standings') {
+    renderStandings();
+    // Auto-load if no data yet
+    if (!standingsData.length && S.eventId) loadStandings();
+  }
+}
+
+// ── Utils ─────────────────────────────────────────────────────────────────────
+function setScroll(screen, html) {
+  const map = { pairings:'pairingsScroll', roster:'rosterScroll', colors:'colorsScroll', history:'historyScroll', standings:'standingsScroll' };
+  const el = document.getElementById(map[screen]);
+  if (el) el.innerHTML = html;
+}
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function showToast(msg, err=false) {
+  const t = document.createElement('div');
+  t.className = 'toast' + (err?' err':'');
   t.textContent = msg;
   document.body.appendChild(t);
-  setTimeout(() => t.remove(), 2800);
+  setTimeout(()=>t.remove(), 2500);
 }
 
-// ── Init ─────────────────────────────────────────────────────────────────────
-document.getElementById('urlInput').value = 'https://tcg.ravensburgerplay.com/events/492131';
-renderSidebar();
+// ── Init ──────────────────────────────────────────────────────────────────────
+renderHistory();
+// Recharger le dernier event automatiquement
+const lastEvent = localStorage.getItem('lorcana-last-event');
+if (lastEvent) {
+  document.getElementById('idInput').value = lastEvent;
+  loadEvent(lastEvent);
+}
 </script>
 </body>
 </html>

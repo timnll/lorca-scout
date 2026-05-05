@@ -182,6 +182,131 @@ app.get('/api/events/:id/colors', (req, res) => {
   res.json(result);
 });
 
+// Get standings (last available round)
+app.get('/api/events/:id/standings', async (req, res) => {
+  const { id } = req.params;
+  const baseUrl = `https://tcg.ravensburgerplay.com/events/${id}`;
+
+  try {
+    // Try to find the latest standings page
+    let standings = [];
+    let latestRound = 0;
+
+    for (let r = 1; r <= 12; r++) {
+      try {
+        const html = await fetchPage(`${baseUrl}/standings/${r}`);
+        const parsed = parseStandings(html, r);
+        if (parsed.length > 0) {
+          standings = parsed;
+          latestRound = r;
+        } else {
+          break;
+        }
+      } catch(e) {
+        break;
+      }
+    }
+
+    // Fallback: try /standings without round
+    if (!standings.length) {
+      try {
+        const html = await fetchPage(`${baseUrl}/standings`);
+        standings = parseStandings(html, null);
+      } catch(e) {}
+    }
+
+    res.json(standings);
+  } catch(err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+function parseStandings(html, round) {
+  const standings = [];
+
+  // Next.js injects all page data in a <script id="__NEXT_DATA__"> tag
+  const nextDataMatch = html.match(/<script id="__NEXT_DATA__"[^>]*>([\s\S]*?)<\/script>/);
+  if (nextDataMatch) {
+    try {
+      const nextData = JSON.parse(nextDataMatch[1]);
+      // Navigate the props tree — structure varies but standings are usually in pageProps
+      const props = nextData?.props?.pageProps;
+      const rawStandings =
+        props?.standings ||
+        props?.standingsData ||
+        props?.event?.standings ||
+        props?.data?.standings ||
+        findDeep(props, 'standings');
+
+      if (Array.isArray(rawStandings) && rawStandings.length > 0) {
+        rawStandings.forEach((s, idx) => {
+          const name = s.displayName || s.username || s.name || s.player?.displayName || s.player?.username || '';
+          if (!name) return;
+          standings.push({
+            rank: s.rank ?? s.position ?? (idx + 1),
+            name,
+            points: s.points ?? s.matchPoints ?? s.score ?? null,
+            wins: s.wins ?? s.matchWins ?? null,
+            losses: s.losses ?? s.matchLosses ?? null,
+            draws: s.draws ?? s.matchDraws ?? 0,
+            round,
+          });
+        });
+        if (standings.length > 0) return standings;
+      }
+    } catch(e) {
+      console.warn('__NEXT_DATA__ parse error:', e.message);
+    }
+  }
+
+  // Fallback: try standard HTML table parsing
+  const { JSDOM } = require('jsdom');
+  const dom = new JSDOM(html);
+  const doc = dom.window.document;
+
+  const rows = doc.querySelectorAll('table tbody tr');
+  rows.forEach((row, idx) => {
+    const cells = [...row.querySelectorAll('td')];
+    if (cells.length < 2) return;
+    const texts = cells.map(c => c.textContent.trim());
+    const rankVal = parseInt(texts[0]);
+    if (isNaN(rankVal)) return;
+    const name = texts[1];
+    const points = texts.slice(2).map(t => parseInt(t)).find(n => !isNaN(n) && n <= 100) ?? null;
+    const recordText = texts.find(t => t.match(/^\d+-\d+/)) || '';
+    const recMatch = recordText.match(/(\d+)-(\d+)(?:-(\d+))?/);
+    if (name) {
+      standings.push({
+        rank: rankVal, name, points,
+        wins: recMatch ? parseInt(recMatch[1]) : null,
+        losses: recMatch ? parseInt(recMatch[2]) : null,
+        draws: recMatch ? parseInt(recMatch[3]) || 0 : null,
+        round,
+      });
+    }
+  });
+
+  return standings;
+}
+
+// Helper: recursively find a key in an object
+function findDeep(obj, key, depth = 0) {
+  if (depth > 5 || !obj || typeof obj !== 'object') return null;
+  if (Array.isArray(obj)) {
+    for (const item of obj) {
+      const r = findDeep(item, key, depth + 1);
+      if (r) return r;
+    }
+  } else {
+    if (key in obj) return obj[key];
+    for (const v of Object.values(obj)) {
+      const r = findDeep(v, key, depth + 1);
+      if (r) return r;
+    }
+  }
+  return null;
+}
+
 // Health check
 app.get('/api/health', (_, res) => res.json({ ok: true, events: Object.keys(store) }));
 

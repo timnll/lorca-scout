@@ -122,17 +122,18 @@ body {
 
 /* ── Round selector (pairings) ── */
 .round-strip {
-  padding: 0 16px 10px; flex-shrink: 0;
+  padding: 0 12px 10px; flex-shrink: 0;
   display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none;
 }
 .round-strip::-webkit-scrollbar { display: none; }
 .round-chip {
-  height: 30px; padding: 0 14px; border-radius: 99px;
+  height: 36px; padding: 0 16px; border-radius: 99px;
   border: 1.5px solid var(--border); background: var(--surface);
-  color: var(--sub); font-family: var(--mono); font-size: 12px;
+  color: var(--sub); font-family: var(--mono); font-size: 13px;
   cursor: pointer; white-space: nowrap; flex-shrink: 0; transition: all 0.12s;
+  display: flex; align-items: center;
 }
-.round-chip.active { background: var(--accent-dim); border-color: var(--accent); color: var(--accent); font-weight: 500; }
+.round-chip.active { background: var(--accent-dim); border-color: var(--accent); color: var(--accent); font-weight: 600; }
 .round-chip:active { opacity: 0.7; }
 
 /* ── Scroll area ── */
@@ -141,33 +142,59 @@ body {
 /* ── Pairing cards ── */
 .pairing-card {
   background: var(--surface); border: 1px solid var(--border);
-  border-radius: var(--r-lg); margin-bottom: 8px; overflow: hidden;
+  border-radius: var(--r-lg); margin-bottom: 10px; overflow: hidden;
 }
-.pairing-inner {
-  display: grid; grid-template-columns: 1fr 32px 1fr;
-  align-items: stretch; min-height: 70px;
+/* Table number bar */
+.pairing-table-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 7px 14px 5px;
+  border-bottom: 1px solid var(--border);
 }
+.table-n { font-size: 11px; color: var(--muted); font-family: var(--mono); font-weight: 500; }
+.pairing-status-badge {
+  font-family: var(--mono); font-size: 10px; font-weight: 600;
+  padding: 2px 8px; border-radius: 99px;
+}
+.pairing-status-badge.done { color: var(--success); background: rgba(107,184,107,0.12); }
+.pairing-status-badge.live { color: var(--accent); background: var(--accent-dim); }
+/* Two players stacked vertically */
+.pairing-players { display: flex; flex-direction: column; }
 .player-slot {
-  padding: 12px 14px; display: flex; flex-direction: column;
-  justify-content: center; gap: 6px; cursor: pointer;
-  transition: background 0.12s; min-width: 0;
-  -webkit-tap-highlight-color: transparent;
+  padding: 13px 14px; display: flex; align-items: center; gap: 10px;
+  cursor: pointer; transition: background 0.12s; min-width: 0;
+  -webkit-tap-highlight-color: transparent; position: relative;
 }
 .player-slot:active { background: var(--raised); }
-.player-slot.scouted { border-left: 3px solid var(--accent); }
-.player-slot.right { border-left: 1px solid var(--border); }
-.player-slot.right.scouted { border-left: 3px solid var(--accent); }
-.ps-name { font-size: 13px; font-weight: 500; line-height: 1.3; word-break: break-word; }
+.player-slot + .player-slot { border-top: 1px solid var(--border); }
+/* Win/loss side stripe */
+.player-slot.winner { background: rgba(107,184,107,0.06); }
+.player-slot.winner::before {
+  content: ''; position: absolute; left: 0; top: 0; bottom: 0;
+  width: 3px; background: var(--success); border-radius: 0 2px 2px 0;
+}
+.player-slot.loser { opacity: 0.5; }
+.player-slot.scouted::before {
+  content: ''; position: absolute; left: 0; top: 0; bottom: 0;
+  width: 3px; background: var(--accent); border-radius: 0 2px 2px 0;
+}
+.player-slot.winner.scouted::before { background: var(--success); }
+/* Name + colors */
+.ps-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
+.ps-name { font-size: 15px; font-weight: 500; line-height: 1.2; word-break: break-word; }
 .ps-name.bye { color: var(--muted); font-style: italic; font-weight: 300; }
 .ps-colors { display: flex; gap: 5px; align-items: center; min-height: 14px; }
-.cdot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
-.vs-col {
+.cdot { width: 13px; height: 13px; border-radius: 50%; flex-shrink: 0; }
+/* Result badge on the right */
+.ps-result-wrap { flex-shrink: 0; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.ps-result {
+  font-family: var(--mono); font-size: 13px; font-weight: 700;
+  width: 28px; height: 28px; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
-  font-family: var(--mono); font-size: 9px; color: var(--muted);
-  border-left: 1px solid var(--border); border-right: 1px solid var(--border);
-  flex-direction: column; gap: 2px;
 }
-.table-n { font-size: 9px; color: var(--muted); font-family: var(--mono); }
+.ps-result.win  { color: var(--success); background: rgba(107,184,107,0.15); }
+.ps-result.loss { color: var(--danger);  background: rgba(217,107,107,0.12); }
+.ps-result.draw { color: var(--sub);     background: var(--raised); }
+.ps-score { font-family: var(--mono); font-size: 10px; color: var(--muted); }
 
 /* ── Roster rows ── */
 .roster-row {
@@ -205,23 +232,51 @@ body {
 .search-input::placeholder { color: var(--muted); }
 
 /* ── Color listing ── */
-.combo-group { margin-bottom: 2px; }
+.colors-summary {
+  padding: 0 12px 10px; flex-shrink: 0;
+  display: flex; gap: 6px; flex-wrap: wrap;
+}
+.colors-summary-pill {
+  font-family: var(--mono); font-size: 11px; color: var(--sub);
+  background: var(--raised); border: 1px solid var(--border);
+  border-radius: 99px; padding: 4px 10px;
+}
+.colors-summary-pill.unknown { color: var(--muted); border-style: dashed; }
+.combo-group { margin-bottom: 10px; border-radius: var(--r-lg); overflow: hidden; border: 1px solid var(--border); }
 .combo-header {
   display: flex; align-items: center; gap: 8px;
-  padding: 10px 16px; background: var(--raised);
-  border-radius: var(--r) var(--r) 0 0;
-  font-family: var(--mono); font-size: 11px; color: var(--sub);
-  position: sticky; top: 0; z-index: 2;
+  padding: 12px 14px; background: var(--raised);
+  font-family: var(--mono); font-size: 12px; color: var(--sub);
 }
-.combo-count { margin-left: auto; font-weight: 500; color: var(--accent); }
-.combo-players { background: var(--surface); border-radius: 0 0 var(--r) var(--r); margin-bottom: 8px; overflow: hidden; border: 1px solid var(--border); border-top: none; }
+.combo-header-left { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0; }
+.combo-label { font-size: 13px; color: var(--text); font-weight: 500; }
+.combo-count { margin-left: auto; font-weight: 600; color: var(--accent); font-size: 13px; flex-shrink: 0; }
+/* Win rate bar */
+.combo-winbar-wrap { padding: 0 14px 12px; background: var(--raised); border-bottom: 1px solid var(--border); }
+.combo-winbar-label {
+  display: flex; justify-content: space-between; align-items: center;
+  font-family: var(--mono); font-size: 10px; color: var(--sub); margin-bottom: 5px;
+}
+.combo-winrate-val { font-size: 13px; font-weight: 600; color: var(--text); }
+.combo-winbar-track {
+  height: 6px; background: var(--border); border-radius: 3px; overflow: hidden;
+}
+.combo-winbar-fill {
+  height: 100%; border-radius: 3px;
+  transition: width 0.4s cubic-bezier(0.4,0,0.2,1);
+}
+.combo-winbar-record { font-family: var(--mono); font-size: 10px; color: var(--muted); }
+/* Player list */
+.combo-players { background: var(--surface); }
 .combo-player {
-  padding: 11px 16px; font-size: 13px; color: var(--text);
+  padding: 11px 14px; font-size: 13px; color: var(--text);
   border-bottom: 1px solid var(--border); cursor: pointer;
-  transition: background 0.1s;
+  transition: background 0.1s; display: flex; align-items: center; gap: 8px;
 }
 .combo-player:last-child { border-bottom: none; }
 .combo-player:active { background: var(--raised); }
+.combo-player-name { flex: 1; }
+.combo-player-rec { font-family: var(--mono); font-size: 11px; color: var(--muted); flex-shrink: 0; }
 
 /* ── History screen ── */
 .history-item {
@@ -352,6 +407,15 @@ body {
 .sheet-handle { width: 36px; height: 4px; background: var(--border2); border-radius: 2px; margin: 12px auto 0; }
 .sheet-name { font-size: 18px; font-weight: 600; padding: 14px 20px 4px; }
 .sheet-hint { font-size: 12px; color: var(--sub); font-family: var(--mono); padding: 0 20px 16px; }
+.sheet-stats {
+  display: flex; gap: 8px; padding: 0 20px 14px; flex-wrap: wrap;
+}
+.sheet-stat {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--r);
+  padding: 6px 12px; font-family: var(--mono); font-size: 12px; color: var(--sub);
+  display: flex; gap: 6px; align-items: center;
+}
+.sheet-stat strong { color: var(--text); font-size: 14px; }
 .sheet-colors {
   display: grid; grid-template-columns: repeat(3, 1fr);
   gap: 8px; padding: 0 16px 16px;
@@ -518,6 +582,7 @@ body {
   <div class="sheet">
     <div class="sheet-handle"></div>
     <div class="sheet-name" id="sheetName"></div>
+    <div class="sheet-stats" id="sheetStats" style="display:none"></div>
     <div class="sheet-hint" id="sheetHint">Sélectionne jusqu'à 2 couleurs</div>
     <div class="sheet-colors" id="sheetColors"></div>
     <div class="sheet-footer">
@@ -642,14 +707,22 @@ function renderPairings() {
 
   const html = round.pairings.map(p => {
     const bye2 = !p.p2 || p.p2 === 'BYE';
+    const r1 = p.winner === 'p1' ? 'win' : p.winner === 'p2' ? 'loss' : p.winner === 'draw' ? 'draw' : null;
+    const r2 = p.winner === 'p2' ? 'win' : p.winner === 'p1' ? 'loss' : p.winner === 'draw' ? 'draw' : null;
+    const isDone = p.isComplete;
+    const statusBadge = isDone
+      ? `<span class="pairing-status-badge done">✓ Terminé</span>`
+      : `<span class="pairing-status-badge live">En cours</span>`;
     return `<div class="pairing-card">
-      <div class="pairing-inner">
-        ${playerSlot(p.p1, false)}
-        <div class="vs-col">
-          <div class="table-n">T${p.table}</div>
-          <div style="color:var(--border2);font-size:14px">⚔</div>
-        </div>
-        ${bye2 ? `<div class="player-slot right"><div class="ps-name bye">BYE</div></div>` : playerSlot(p.p2, true)}
+      <div class="pairing-table-bar">
+        <span class="table-n">Table ${p.table}</span>
+        ${statusBadge}
+      </div>
+      <div class="pairing-players">
+        ${playerSlot(p.p1, r1, p.gWW, p.gWL, p.winner === 'p1')}
+        ${bye2
+          ? `<div class="player-slot"><div class="ps-main"><div class="ps-name bye">BYE</div></div></div>`
+          : playerSlot(p.p2, r2, p.winner==='p2'?p.gWW:p.gWL, p.winner==='p2'?p.gWL:p.gWW, p.winner === 'p2')}
       </div>
     </div>`;
   }).join('');
@@ -657,16 +730,32 @@ function renderPairings() {
   setScroll('pairings', html || '<div class="state-box">Aucun pairing</div>');
 }
 
-function playerSlot(name, isRight) {
+function playerSlot(name, result, gW, gL, isWinner) {
   const p = S.players[name] || {colors:[]};
   const sc = p.colors?.length > 0;
   const dots = (p.colors||[]).map(cid => {
     const c = COLORS.find(x=>x.id===cid);
     return c ? `<div class="cdot" style="background:${c.hex}" title="${c.label}"></div>` : '';
   }).join('');
-  return `<div class="player-slot${isRight?' right':''}${sc?' scouted':''}" data-open-sheet="${esc(name)}">
-    <div class="ps-name">${esc(name)}</div>
-    <div class="ps-colors">${dots}</div>
+  const winCls = result === 'win' ? ' winner' : result === 'loss' ? ' loser' : '';
+  const scoutCls = sc ? ' scouted' : '';
+
+  let resultHtml = '';
+  if (result) {
+    const label = result === 'win' ? 'W' : result === 'loss' ? 'L' : 'D';
+    const score = (gW != null && gL != null) ? `<div class="ps-score">${gW}-${gL}</div>` : '';
+    resultHtml = `<div class="ps-result-wrap">
+      <div class="ps-result ${result}">${label}</div>
+      ${score}
+    </div>`;
+  }
+
+  return `<div class="player-slot${winCls}${scoutCls}" data-open-sheet="${esc(name)}">
+    <div class="ps-main">
+      <div class="ps-name">${esc(name)}</div>
+      ${dots ? `<div class="ps-colors">${dots}</div>` : ''}
+    </div>
+    ${resultHtml}
   </div>`;
 }
 
@@ -769,7 +858,9 @@ async function loadStandings() {
   try {
     const res = await fetch(`${SERVER}/api/events/${S.eventId}/standings`);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    standingsData = await res.json();
+    const raw = await res.json();
+    // Server returns flat array of standings
+    standingsData = Array.isArray(raw) ? raw : (raw.standings || []);
     renderStandings();
   } catch(err) {
     setScroll('standings', `<div class="err-box">Impossible de charger les standings.<br>${err.message}</div>`);
@@ -793,7 +884,7 @@ function renderStandings() {
   let data = standingsData;
 
   // Update sub title
-  const sub = data.length ? `Ronde ${data[0]?.round || '?'} · ${data.length} joueurs` : (S.eventId ? `Tournoi #${S.eventId}` : '—');
+  const sub = data.length ? `${data.length} joueurs` : (S.eventId ? `Tournoi #${S.eventId}` : '—');
   document.getElementById('standingsSub').textContent = sub;
 
   if (standingsFilter === 'favs') {
@@ -854,38 +945,154 @@ function standingCard(name, s, favs) {
 
 // ── Colors listing ────────────────────────────────────────────────────────────
 function renderColors() {
-  const withColors = Object.entries(S.players)
-    .filter(([,d])=>d.colors&&d.colors.length>0)
-    .sort(([a],[b])=>a.localeCompare(b));
+  const allPlayers = Object.entries(S.players);
+  const total = allPlayers.length;
+  const withColors = allPlayers.filter(([,d])=>d.colors&&d.colors.length>0);
   const sc = withColors.length;
-  document.getElementById('colorsCount').textContent = sc ? `${sc} joueurs scouttés` : '—';
+  const unknown = total - sc;
+  document.getElementById('colorsCount').textContent = sc ? `${sc} / ${total} scouttés` : '—';
 
   if (!withColors.length) {
     setScroll('colors', '<div class="state-box">Aucune couleur renseignée</div>');
     return;
   }
+
+  // Build groups
   const groups = {};
-  withColors.forEach(([name,data])=>{
-    const key=[...data.colors].sort().join('+');
-    if (!groups[key]) groups[key]={colors:data.colors, players:[]};
+  withColors.forEach(([name, data]) => {
+    const key = [...data.colors].sort().join('+');
+    if (!groups[key]) groups[key] = { colors: data.colors, players: [] };
     groups[key].players.push(name);
   });
-  const sorted = Object.entries(groups).sort(([,a],[,b])=>b.players.length-a.players.length);
-  const html = sorted.map(([,g])=>{
-    const dots = g.colors.map(cid=>{
-      const c=COLORS.find(x=>x.id===cid);
-      return c?`<div class="cdot" style="background:${c.hex};width:12px;height:12px"></div>`:'';
+
+  // Compute win rates from pairings for scouted players
+  // For each group, scan all completed pairings where a player of this group appeared
+  const allPairings = S.rounds.flatMap(r => r.pairings || []);
+  const completedPairings = allPairings.filter(p => p.isComplete && p.winner && p.winner !== 'draw');
+  const drawnPairings = allPairings.filter(p => p.isComplete && p.winner === 'draw');
+
+  // Map: playerName -> colorKey
+  const playerColorKey = {};
+  withColors.forEach(([name, data]) => {
+    playerColorKey[name] = [...data.colors].sort().join('+');
+  });
+
+  // Aggregate stats per group
+  const groupStats = {};
+  Object.keys(groups).forEach(k => { groupStats[k] = { w: 0, l: 0, d: 0 }; });
+
+  completedPairings.forEach(p => {
+    const k1 = playerColorKey[p.p1];
+    const k2 = playerColorKey[p.p2];
+    if (p.winner === 'p1') {
+      if (k1) groupStats[k1] && groupStats[k1].w++;
+      if (k2) groupStats[k2] && groupStats[k2].l++;
+    } else if (p.winner === 'p2') {
+      if (k2) groupStats[k2] && groupStats[k2].w++;
+      if (k1) groupStats[k1] && groupStats[k1].l++;
+    }
+  });
+  drawnPairings.forEach(p => {
+    const k1 = playerColorKey[p.p1];
+    const k2 = playerColorKey[p.p2];
+    if (k1) groupStats[k1] && groupStats[k1].d++;
+    if (k2) groupStats[k2] && groupStats[k2].d++;
+  });
+
+  // Sort by winrate desc, then by player count
+  const sorted = Object.entries(groups).sort(([ka, a], [kb, b]) => {
+    const sa = groupStats[ka], sb = groupStats[kb];
+    const totalA = sa.w + sa.l + sa.d, totalB = sb.w + sb.l + sb.d;
+    const wrA = totalA ? sa.w / totalA : -1;
+    const wrB = totalB ? sb.w / totalB : -1;
+    if (wrA !== wrB) return wrB - wrA;
+    return b.players.length - a.players.length;
+  });
+
+  // Best winrate for bar scaling
+  const maxWR = Math.max(...sorted.map(([k]) => {
+    const s = groupStats[k];
+    const t = s.w + s.l + s.d;
+    return t ? s.w / t : 0;
+  }), 0.01);
+
+  const pct = v => total ? Math.round(v / total * 100) : 0;
+  const unknownPill = unknown > 0
+    ? `<div class="colors-summary-pill unknown">❓ ${unknown} non renseignés (${pct(unknown)}%)</div>` : '';
+
+  // Color for the winrate bar (green → orange → red)
+  function barColor(wr) {
+    if (wr >= 0.6) return 'var(--success)';
+    if (wr >= 0.45) return 'var(--accent)';
+    return 'var(--danger)';
+  }
+
+  const html = sorted.map(([key, g]) => {
+    const dots = g.colors.map(cid => {
+      const c = COLORS.find(x => x.id === cid);
+      return c ? `<div class="cdot" style="background:${c.hex};width:14px;height:14px"></div>` : '';
     }).join('');
-    const labels = g.colors.map(cid=>COLORS.find(x=>x.id===cid)?.label||cid).join(' + ');
-    const players = g.players.map(n=>
-      `<div class="combo-player" data-open-sheet="${esc(n)}">${esc(n)}</div>`
-    ).join('');
+    const labels = g.colors.map(cid => COLORS.find(x => x.id === cid)?.label || cid).join(' + ');
+    const groupPct = pct(g.players.length);
+
+    const st = groupStats[key];
+    const totalMatches = st.w + st.l + st.d;
+    const wr = totalMatches ? st.w / totalMatches : null;
+    const wrPct = wr != null ? Math.round(wr * 100) : null;
+    // Bar width relative to best winrate
+    const barW = wr != null ? Math.round((wr / maxWR) * 100) : 0;
+
+    const winbarHtml = totalMatches > 0 ? `
+      <div class="combo-winbar-wrap">
+        <div class="combo-winbar-label">
+          <span class="combo-winbar-record">${st.w}V · ${st.l}D · ${st.d}N sur ${totalMatches} matchs</span>
+          <span class="combo-winrate-val">${wrPct}% victoires</span>
+        </div>
+        <div class="combo-winbar-track">
+          <div class="combo-winbar-fill" style="width:${barW}%;background:${barColor(wr)}"></div>
+        </div>
+      </div>` : `
+      <div class="combo-winbar-wrap">
+        <div class="combo-winbar-label">
+          <span class="combo-winbar-record">Aucun match terminé renseigné</span>
+        </div>
+      </div>`;
+
+    const players = g.players.map(n => {
+      const pd = S.players[n] || {};
+      const rec = pd.wins != null ? `${pd.wins}V-${pd.losses}D` : '';
+      return `<div class="combo-player" data-open-sheet="${esc(n)}">
+        <span class="combo-player-name">${esc(n)}</span>
+        ${rec ? `<span class="combo-player-rec">${rec}</span>` : ''}
+      </div>`;
+    }).join('');
+
     return `<div class="combo-group">
-      <div class="combo-header">${dots}<span>${labels}</span><span class="combo-count">${g.players.length}×</span></div>
+      <div class="combo-header">
+        <div class="combo-header-left">${dots}<span class="combo-label">${labels}</span></div>
+        <span class="combo-count">${g.players.length}× · ${groupPct}%</span>
+      </div>
+      ${winbarHtml}
       <div class="combo-players">${players}</div>
     </div>`;
   }).join('');
-  setScroll('colors', html);
+
+  // Summary pills above
+  const summaryHtml = `<div class="colors-summary">
+    ${unknownPill}
+    ${sorted.map(([key, g]) => {
+      const st = groupStats[key];
+      const tm = st.w + st.l + st.d;
+      const wr = tm ? Math.round(st.w / tm * 100) : null;
+      const dots = g.colors.map(cid => {
+        const c = COLORS.find(x => x.id === cid);
+        return c ? `<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${c.hex};margin-right:2px"></span>` : '';
+      }).join('');
+      return `<div class="colors-summary-pill">${dots}${wr != null ? wr + '%' : '?'}</div>`;
+    }).join('')}
+  </div>`;
+
+  setScroll('colors', summaryHtml + html);
 }
 
 // ── Bottom sheet ──────────────────────────────────────────────────────────────
@@ -900,6 +1107,25 @@ function renderSheet() {
   document.getElementById('sheetHint').textContent =
     S.sheetColors.length ? `Sélectionné: ${S.sheetColors.map(id=>COLORS.find(c=>c.id===id)?.label||id).join(' + ')}` :
     'Sélectionne jusqu\'à 2 couleurs';
+
+  // Stats block
+  const p = S.players[S.sheetPlayer] || {};
+  const hasStats = p.wins != null || p.points != null;
+  const statsEl = document.getElementById('sheetStats');
+  if (statsEl) {
+    if (hasStats) {
+      const w = p.wins ?? 0, l = p.losses ?? 0, d = p.draws ?? 0, pts = p.points ?? 0;
+      const rankStr = p.rank != null ? `<div class="sheet-stat">🏆 <strong>#${p.rank}</strong></div>` : '';
+      statsEl.innerHTML = `
+        ${rankStr}
+        <div class="sheet-stat"><strong>${w}W-${l}L${d>0?'-'+d+'D':''}</strong></div>
+        <div class="sheet-stat"><strong>${pts}</strong> pts</div>`;
+      statsEl.style.display = 'flex';
+    } else {
+      statsEl.style.display = 'none';
+    }
+  }
+
   document.getElementById('sheetColors').innerHTML = COLORS.map(c=>{
     const sel = S.sheetColors.includes(c.id);
     return `<div class="sheet-color-btn${sel?' sel':''}" style="--c:${c.hex}" onclick="toggleSheet('${c.id}')">

@@ -1,108 +1,82 @@
-# Lorcana Scout 🎴
+# Lorcana Scout
 
-Application de scouting collaboratif pour tournois Disney Lorcana.
-
-## Fonctionnalités
-- Scraping automatique du roster d'un événement depuis `tcg.ravensburgerplay.com`
-- Navigation par rondes (si pairings disponibles)
-- Attribution de 2 couleurs de deck par joueur (Ambre, Améthyste, Émeraude, Rubis, Saphir, Acier)
-- **Listing complet par bicolorité** (onglet "Couleurs")
-- **Temps réel multi-joueurs** via WebSocket : tous les membres du groupe voient les mises à jour instantanément
-- N'importe qui peut modifier/corriger les couleurs d'un joueur
+Application mobile de scouting pour tournois Lorcana. Charge le roster d'un événement depuis [tcg.ravensburgerplay.com](https://tcg.ravensburgerplay.com), affiche les pairings ronde par ronde, et permet de noter les bicolorités des joueurs adverses en temps réel — partagé entre tous les appareils connectés via WebSocket.
 
 ---
 
-## Installation rapide
+## Fonctionnalités
 
-### Prérequis
-- [Node.js](https://nodejs.org) v18 ou supérieur
+- **Roster complet** — charge tous les joueurs inscrits via l'API Ravensburger Play (pas de limite de pagination)
+- **Pairings par ronde** — affichage mobile-first avec résultats (W/L/D), scores et statut de chaque match
+- **Scouting de bicolorité** — note jusqu'à 2 couleurs par joueur, synchronisé en temps réel entre appareils
+- **Standings** — classement avec points, record W/L/D et rang final
+- **Onglet Couleurs** — répartition des bicolorités avec pourcentage du tournoi, taux de victoire par combo et barre de performance visuelle
+- **Favoris** — marque des joueurs pour les suivre dans les standings
+- **Historique** — retrouve rapidement les tournois chargés précédemment
 
-### 1. Installer le serveur
+---
+
+## Stack
+
+- **Backend** : Node.js + Express + WebSocket (`ws`)
+- **Données** : API REST `api.cloudflare.ravensburgerplay.com` (publique, sans auth)
+- **Frontend** : HTML/CSS/JS vanilla, optimisé mobile
+- **Hébergement** : Railway (ou local)
+
+---
+
+## Déploiement Railway (gratuit)
+
+### 1. Créer un repo GitHub
+- Aller sur [github.com/new](https://github.com/new)
+- Créer un repo public ou privé (ex: `lorcana-scout`)
+- Uploader les trois fichiers : `index.html`, `server.js`, `package.json`
+
+### 2. Déployer sur Railway
+- Aller sur [railway.app](https://railway.app) → se connecter avec GitHub
+- **New Project** → **Deploy from GitHub repo** → sélectionner `lorcana-scout`
+- Railway détecte automatiquement Node.js et lance `npm start`
+- En 2 minutes, une URL publique est générée (ex: `lorcana-scout-production.up.railway.app`)
+
+### 3. C'est tout ✅
+L'app détecte automatiquement si elle tourne en local ou en prod — pas de config à changer.
+
+---
+
+## Usage local
 
 ```bash
-cd server
 npm install
-```
-
-### 2. Lancer le serveur
-
-```bash
 npm start
+# Ouvrir http://localhost:3001 dans le navigateur
 ```
-
-Le serveur démarre sur **http://localhost:3001**
-
-### 3. Ouvrir le client
-
-Ouvrir le fichier `client/index.html` directement dans un navigateur.
-
-> **Important** : le client se connecte à `localhost:3001`. Tous les membres du groupe doivent utiliser le **même réseau local** ou le serveur doit être accessible publiquement (voir ci-dessous).
 
 ---
 
 ## Utilisation
 
-1. Coller le lien d'un événement Ravensburger Play dans la barre en haut
-2. Cliquer sur **Charger**
-3. Le roster est récupéré automatiquement (toutes les pages)
-4. Dans les **Pairings** ou le **Roster**, cliquer sur un joueur pour renseigner ses 2 couleurs
-5. L'onglet **Couleurs** affiche le listing complet groupé par bicolorité
+1. Saisir l'ID de l'événement dans la barre en haut (ex: `492131`) et appuyer sur **Go**
+2. Le roster complet et les pairings disponibles se chargent automatiquement
+3. Dans **Pairings**, naviguer entre les rondes avec les chips en haut ; cliquer sur un joueur pour noter sa bicolorité
+4. Dans **Roster**, rechercher un joueur, l'ajouter en favori ⭐ ou lui assigner ses couleurs
+5. Dans **Couleurs**, consulter la répartition des decks scouttés et leur taux de victoire
+6. Dans **Standings**, filtrer sur les favoris pour suivre les joueurs clés ; rafraîchir en cours de ronde
 
 ---
 
-## Accès multi-joueurs en réseau local
+## API interne (debug)
 
-Si plusieurs personnes sont sur le même Wi-Fi :
-
-1. Récupérer l'IP locale de la machine qui fait tourner le serveur :
-   ```bash
-   # macOS/Linux
-   ifconfig | grep "inet "
-   # Windows
-   ipconfig
-   ```
-2. Dans `client/index.html`, modifier les 2 lignes de config (vers le haut du `<script>`) :
-   ```js
-   const SERVER = 'http://192.168.X.X:3001';  // IP locale
-   const WS_URL = 'ws://192.168.X.X:3001';
-   ```
-3. Chaque membre ouvre `index.html` dans son navigateur — les mises à jour sont synchronisées en temps réel.
-
----
-
-## Accès public (optionnel)
-
-Pour exposer le serveur sur internet (ex: depuis un téléphone 4G), utiliser [ngrok](https://ngrok.com) :
-
-```bash
-ngrok http 3001
-```
-
-Ngrok fournit une URL publique. Mettre à jour `SERVER` et `WS_URL` dans le client avec cette URL (en remplaçant `http` par `https` et `ws` par `wss`).
-
----
-
-## Structure du projet
+Le serveur expose une route de debug pour inspecter n'importe quel endpoint Ravensburger Play :
 
 ```
-lorcana-scout/
-├── server/
-│   ├── server.js      # Backend Express + WebSocket
-│   └── package.json
-└── client/
-    └── index.html     # App complète en un fichier
+GET /api/debug/:eventId?endpoint=/events/:id/tournament-rounds
 ```
 
 ---
 
-## API du serveur
+## Notes
 
-| Méthode | Route | Description |
-|---------|-------|-------------|
-| GET | `/api/events/:id` | Charge/retourne les données d'un événement |
-| GET | `/api/events/:id?refresh=1` | Force le re-scraping |
-| PATCH | `/api/events/:id/players/:name` | Met à jour les couleurs d'un joueur |
-| GET | `/api/events/:id/colors` | Listing complet bicolorité |
-| GET | `/api/health` | Statut du serveur |
-
-Les données sont conservées **en mémoire** pendant la session du serveur. Pour une persistance entre redémarrages, il suffirait d'ajouter une écriture JSON dans un fichier (prévu comme évolution simple).
+- Les données sont **en mémoire** : les couleurs scouttées se réinitialisent au redémarrage du serveur
+- Le plan gratuit Railway = 500h/mois, largement suffisant pour des tournois ponctuels
+- Les stats de winrate dans l'onglet Couleurs n'utilisent que les matchs où **les deux joueurs sont scouttés** — plus tu renseignes de bicolorités, plus les stats sont précises
+- Pour persister les données entre redémarrages, Railway propose PostgreSQL gratuit

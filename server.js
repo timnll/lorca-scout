@@ -57,7 +57,7 @@ async function apiGetAll(path) {
   return results;
 }
 
-// ── HTML fallback for metadata ────────────────────────────────────────────────
+// ── HTML fallback ─────────────────────────────────────────────────────────────
 async function fetchPage(url) {
   const res = await fetch(url, {
     headers: { 'User-Agent': API_HEADERS['User-Agent'], 'Accept': 'text/html', 'Referer': 'https://tcg.ravensburgerplay.com/' }
@@ -74,11 +74,6 @@ function extractTitleFromHTML(html) {
 }
 
 // ── Parse event data ──────────────────────────────────────────────────────────
-
-/**
- * Extract metadata + round definitions from GET /events/:id
- * Rounds come from tournament_phases[].rounds[], skipping round_type=PLAYER_MEETING
- */
 function parseEventData(ev) {
   const meta = {
     title: ev.name || ev.title || '',
@@ -87,7 +82,6 @@ function parseEventData(ev) {
     players: String(ev.starting_player_count || ev.registered_user_count || ''),
   };
 
-  // Flatten all rounds from all phases, sorted by round_number, skip PLAYER_MEETING
   const roundDefs = (ev.tournament_phases ?? [])
     .flatMap(phase => phase.rounds ?? [])
     .filter(r => r.round_type !== 'PLAYER_MEETING')
@@ -98,49 +92,55 @@ function parseEventData(ev) {
 }
 
 // ── Name helpers ──────────────────────────────────────────────────────────────
-
 function playerNameFromRegistration(reg) {
   return reg?.best_identifier || reg?.special_user_identifier || reg?.user?.best_identifier || null;
 }
 
 function nameFromRelationship(rel) {
-  // user_event_status.best_identifier = in-game pseudo (e.g. "TacPlay", "[EC] KaraNyyan")
   return rel?.user_event_status?.best_identifier || rel?.player?.best_identifier || null;
 }
 
+// ── Match → pairing with result ───────────────────────────────────────────────
 function pairingFromMatch(match, idx) {
   const rels = match?.player_match_relationships ?? [];
   const p1 = nameFromRelationship(rels[0]) || '';
   const p2 = nameFromRelationship(rels[1]) || '';
-  if (!p1 || !p2) return null; // skip byes
-  return { table: match?.table_number ?? (idx + 1), p1, p2 };
-}
+  if (!p1 || !p2) return null;
 
-function standingFromRegistration(reg, idx) {
-  const name = reg?.best_identifier || reg?.user?.best_identifier || '';
-  if (!name) return null;
-  if (reg.total_match_points === 0 && reg.matches_won === 0 && reg.matches_lost === 0) return null;
-  return {
-    rank: reg.final_place_in_standings ?? (idx + 1),
-    name,
-    points: reg.total_match_points ?? null,
-    wins: reg.matches_won ?? null,
-    losses: reg.matches_lost ?? null,
-    draws: reg.matches_drawn ?? 0,
-  };
+  const table = match?.table_number ?? (idx + 1);
+  const isComplete = match?.status === 'COMPLETE';
+  const isBye = match?.match_is_bye === true;
+  const isDraw = match?.match_is_intentional_draw || match?.match_is_unintentional_draw;
+  const winnerId = match?.winning_player; // user id of winner
+
+  // Find which rel corresponds to winner
+  let winner = null; // 'p1' | 'p2' | 'draw' | null
+  if (isComplete) {
+    if (isDraw) {
+      winner = 'draw';
+    } else if (winnerId != null) {
+      const winnerRel = rels.find(r => r.player?.id === winnerId);
+      if (winnerRel) {
+        winner = nameFromRelationship(winnerRel) === p1 ? 'p1' : 'p2';
+      }
+    }
+  }
+
+  // Game scores
+  const gWW = match?.games_won_by_winner ?? null;
+  const gWL = match?.games_won_by_loser ?? null;
+
+  return { table, p1, p2, winner, gWW, gWL, isComplete, isBye };
 }
 
 // ── Load rounds ───────────────────────────────────────────────────────────────
 async function loadRounds(roundDefs) {
   const rounds = [];
-
-  for (const { num, roundId, status, pairingsStatus } of roundDefs) {
-    // Skip rounds with no pairings yet
+  for (const { num, roundId, pairingsStatus } of roundDefs) {
     if (pairingsStatus !== 'GENERATED') {
-      console.log(`  [round ${num}] pairings not generated yet (${pairingsStatus}), skipping`);
+      console.log(`  [round ${num}] pairings not generated yet, skipping`);
       continue;
     }
-
     try {
       const matches = await apiGetAll(`/tournament-rounds/${roundId}/matches/paginated`);
       const pairings = matches.map(pairingFromMatch).filter(Boolean);
@@ -152,7 +152,6 @@ async function loadRounds(roundDefs) {
       console.warn(`  [round ${num}] failed: ${e.message}`);
     }
   }
-
   return rounds;
 }
 
@@ -164,26 +163,36 @@ app.get('/api/events/:id', async (req, res) => {
     if (store[id] && !req.query.refresh) return res.json(store[id]);
     console.log(`\n[event] Loading ${id}`);
 
-    // 1. Event data (meta + round definitions)
     const ev = await apiGet(`/events/${id}`);
     const { meta, roundDefs } = parseEventData(ev);
     console.log(`[event] Meta:`, meta);
-    console.log(`[event] ${roundDefs.length} rounds defined:`, roundDefs.map(r => `R${r.num}(${r.roundId})`).join(', '));
+    console.log(`[event] ${roundDefs.length} rounds defined`);
 
-    // 2. Registrations (full roster)
     const registrations = await apiGetAll(`/events/${id}/registrations`);
     const playerNames = [...new Set(registrations.map(playerNameFromRegistration).filter(Boolean))];
     console.log(`[event] ${playerNames.length} players`);
     meta.players = String(playerNames.length);
 
-    // 3. Rounds with pairings
-    const rounds = await loadRounds(roundDefs);
-    console.log(`[event] ${rounds.length} rounds loaded`);
-
-    // 4. Players map (preserve existing colors)
+    // Build player map with stats from registrations
     const existing = store[id]?.players || {};
     const players = {};
-    playerNames.forEach(name => { players[name] = existing[name] || { colors: [] }; });
+    registrations.forEach(reg => {
+      const name = playerNameFromRegistration(reg);
+      if (!name) return;
+      players[name] = {
+        ...(existing[name] || {}),
+        colors: existing[name]?.colors || [],
+        // Store stats for display in the sheet
+        wins: reg.matches_won ?? 0,
+        losses: reg.matches_lost ?? 0,
+        draws: reg.matches_drawn ?? 0,
+        points: reg.total_match_points ?? 0,
+        rank: reg.final_place_in_standings ?? null,
+      };
+    });
+
+    const rounds = await loadRounds(roundDefs);
+    console.log(`[event] ${rounds.length} rounds loaded`);
 
     store[id] = { meta, players, rounds, eventId: id, loadedAt: new Date().toISOString() };
     res.json(store[id]);
@@ -216,30 +225,60 @@ app.get('/api/events/:id/colors', (req, res) => {
   res.json(result);
 });
 
-// Standings: derived from registrations (has final_place_in_standings + stats)
+// Standings: built from player data already in store (populated at load time)
 app.get('/api/events/:id/standings', async (req, res) => {
   const { id } = req.params;
   try {
+    // Refresh from API to get latest stats
     const registrations = await apiGetAll(`/events/${id}/registrations`);
     const standings = registrations
-      .map(standingFromRegistration)
+      .map((reg, idx) => {
+        const name = playerNameFromRegistration(reg);
+        if (!name) return null;
+        return {
+          rank: reg.final_place_in_standings ?? null,
+          name,
+          points: reg.total_match_points ?? 0,
+          wins: reg.matches_won ?? 0,
+          losses: reg.matches_lost ?? 0,
+          draws: reg.matches_drawn ?? 0,
+        };
+      })
       .filter(Boolean)
-      .sort((a, b) => (a.rank ?? 9999) - (b.rank ?? 9999));
-    res.json({ standings, latestRound: null });
+      .sort((a, b) => {
+        // Sort by rank if available, else by points desc
+        if (a.rank != null && b.rank != null) return a.rank - b.rank;
+        if (a.rank != null) return -1;
+        if (b.rank != null) return 1;
+        return b.points - a.points;
+      });
+
+    // Also update the in-memory store with fresh stats
+    if (store[id]) {
+      registrations.forEach(reg => {
+        const name = playerNameFromRegistration(reg);
+        if (!name || !store[id].players[name]) return;
+        Object.assign(store[id].players[name], {
+          wins: reg.matches_won ?? 0,
+          losses: reg.matches_lost ?? 0,
+          draws: reg.matches_drawn ?? 0,
+          points: reg.total_match_points ?? 0,
+          rank: reg.final_place_in_standings ?? null,
+        });
+      });
+    }
+
+    res.json(standings);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-// Debug: inspect any API endpoint
 app.get('/api/debug/:id', async (req, res) => {
   const { id } = req.params;
   const endpoint = req.query.endpoint || `/events/${id}`;
-  try {
-    res.json(await apiGet(endpoint));
-  } catch (e) {
-    res.status(500).json({ error: e.message, endpoint });
-  }
+  try { res.json(await apiGet(endpoint)); }
+  catch (e) { res.status(500).json({ error: e.message, endpoint }); }
 });
 
 app.get('/api/health', (_, res) => res.json({ ok: true, events: Object.keys(store) }));

@@ -31,40 +31,55 @@
   --mono: 'JetBrains Mono', monospace;
   --nav-h: 64px;
   --header-h: 58px;
-
-  /* Lorcana colors */
-  --amber:    #E9A326;
-  --amethyst: #9B59B6;
-  --emerald:  #27AE60;
-  --ruby:     #C0392B;
-  --sapphire: #2980B9;
-  --steel:    #7F8C8D;
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 html { height: 100%; -webkit-text-size-adjust: 100%; }
-body {
-  height: 100%; background: var(--bg); color: var(--text);
-  font-family: var(--font); font-size: 15px; line-height: 1.4;
-  overflow: hidden;
+body { height: 100%; background: var(--bg); color: var(--text); font-family: var(--font); font-size: 15px; line-height: 1.4; overflow: hidden; }
+
+/* ── Login screen ── */
+#loginScreen {
+  position: fixed; inset: 0; background: var(--bg);
+  display: none; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 0; z-index: 1000; padding: 32px;
 }
+.login-logo { font-size: 28px; font-weight: 700; color: var(--accent); letter-spacing: -1px; margin-bottom: 8px; }
+.login-logo em { color: var(--sub); font-style: normal; font-weight: 300; }
+.login-sub { font-family: var(--mono); font-size: 12px; color: var(--muted); margin-bottom: 40px; }
+.login-box {
+  width: 100%; max-width: 320px; background: var(--surface);
+  border: 1px solid var(--border); border-radius: var(--r-lg);
+  padding: 24px; display: flex; flex-direction: column; gap: 12px;
+}
+.login-label { font-family: var(--mono); font-size: 11px; color: var(--sub); text-transform: uppercase; letter-spacing: 1px; }
+#loginInput {
+  width: 100%; background: var(--raised); border: 1.5px solid var(--border);
+  border-radius: var(--r); color: var(--text); font-family: var(--mono);
+  font-size: 18px; padding: 12px 16px; outline: none; letter-spacing: 3px;
+  -webkit-appearance: none; transition: border-color 0.15s; text-align: center;
+}
+#loginInput:focus { border-color: var(--accent); }
+#loginInput::placeholder { letter-spacing: 1px; font-size: 13px; color: var(--muted); }
+#loginBtn {
+  width: 100%; height: 48px; background: var(--accent); border: none;
+  border-radius: var(--r-lg); color: #0a0b0d; font-family: var(--font);
+  font-size: 15px; font-weight: 600; cursor: pointer; transition: opacity 0.15s;
+}
+#loginBtn:active { opacity: 0.8; }
+#loginBtn:disabled { opacity: 0.5; }
+#loginErr { font-family: var(--mono); font-size: 12px; color: var(--danger); text-align: center; min-height: 16px; }
+#loginHint { font-family: var(--mono); font-size: 11px; color: var(--muted); text-align: center; }
 
 /* ── App shell ── */
-.app { display: flex; flex-direction: column; height: 100vh; height: 100dvh; }
-
-/* ── Header ── */
+#appRoot { display: none; flex-direction: column; height: 100vh; height: 100dvh; }
 .app-header {
   height: var(--header-h); flex-shrink: 0;
   background: var(--surface); border-bottom: 1px solid var(--border);
-  display: flex; align-items: center; padding: 0 16px; gap: 10px;
-  position: relative; z-index: 10;
+  display: flex; align-items: center; padding: 0 16px; gap: 10px; position: relative; z-index: 10;
 }
-.logo-mark {
-  font-size: 20px; font-weight: 700; color: var(--accent); letter-spacing: -0.5px;
-  white-space: nowrap;
-}
+.logo-mark { font-size: 20px; font-weight: 700; color: var(--accent); letter-spacing: -0.5px; white-space: nowrap; }
 .logo-mark em { color: var(--sub); font-style: normal; font-weight: 300; }
-
 .event-id-form { flex: 1; display: flex; align-items: center; gap: 8px; }
 .id-input-wrap {
   flex: 1; display: flex; align-items: center;
@@ -72,399 +87,287 @@ body {
   border-radius: var(--r); overflow: hidden; transition: border-color 0.15s;
 }
 .id-input-wrap:focus-within { border-color: var(--accent); }
-.id-prefix {
-  padding: 0 8px 0 12px; font-family: var(--mono); font-size: 11px;
-  color: var(--muted); white-space: nowrap; border-right: 1px solid var(--border);
-  height: 38px; display: flex; align-items: center;
-}
-#idInput {
-  flex: 1; background: none; border: none; outline: none;
-  color: var(--text); font-family: var(--mono); font-size: 14px;
-  padding: 0 12px; height: 38px; min-width: 0;
-  -webkit-appearance: none;
-}
+.id-prefix { padding: 0 8px 0 12px; font-family: var(--mono); font-size: 11px; color: var(--muted); white-space: nowrap; border-right: 1px solid var(--border); height: 38px; display: flex; align-items: center; }
+#idInput { flex: 1; background: none; border: none; outline: none; color: var(--text); font-family: var(--mono); font-size: 14px; padding: 0 12px; height: 38px; min-width: 0; -webkit-appearance: none; }
 #idInput::placeholder { color: var(--muted); }
-.load-btn {
-  height: 38px; padding: 0 14px; background: var(--accent); border: none;
-  border-radius: var(--r); color: #0a0b0d; font-family: var(--font);
-  font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap;
-  transition: opacity 0.15s; flex-shrink: 0;
-}
+.load-btn { height: 38px; padding: 0 14px; background: var(--accent); border: none; border-radius: var(--r); color: #0a0b0d; font-family: var(--font); font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; transition: opacity 0.15s; flex-shrink: 0; }
 .load-btn:active { opacity: 0.75; }
-
-.ws-pill {
-  font-family: var(--mono); font-size: 10px; padding: 3px 7px;
-  border-radius: 99px; border: 1px solid var(--border); color: var(--muted);
-  white-space: nowrap; flex-shrink: 0;
-}
+.ws-pill { font-family: var(--mono); font-size: 10px; padding: 3px 7px; border-radius: 99px; border: 1px solid var(--border); color: var(--muted); white-space: nowrap; flex-shrink: 0; }
 .ws-pill.on { color: var(--success); border-color: var(--success); }
+#queueBadge { display: none; font-family: var(--mono); font-size: 10px; color: var(--accent); white-space: nowrap; }
 
-/* ── Content area ── */
+/* ── Content / Screens ── */
 .content { flex: 1; overflow: hidden; position: relative; }
-
-/* ── Screens ── */
-.screen {
-  position: absolute; inset: 0;
-  display: flex; flex-direction: column;
-  overflow: hidden;
-  opacity: 0; pointer-events: none;
-  transition: opacity 0.18s;
-}
+.screen { position: absolute; inset: 0; display: flex; flex-direction: column; overflow: hidden; opacity: 0; pointer-events: none; transition: opacity 0.18s; }
 .screen.active { opacity: 1; pointer-events: all; }
-
-/* ── Screen headers ── */
-.screen-header {
-  padding: 14px 16px 10px; flex-shrink: 0;
-  display: flex; align-items: center; gap: 10px;
-}
+.screen-header { padding: 14px 16px 10px; flex-shrink: 0; display: flex; align-items: center; gap: 10px; }
 .screen-title { font-size: 18px; font-weight: 600; color: var(--text); }
 .screen-sub { font-size: 12px; color: var(--sub); font-family: var(--mono); margin-top: 1px; }
 
-/* ── Round selector (pairings) ── */
-.round-strip {
-  padding: 0 12px 10px; flex-shrink: 0;
-  display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none;
-}
+/* ── Round selector ── */
+.round-strip { padding: 0 12px 10px; flex-shrink: 0; display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; }
 .round-strip::-webkit-scrollbar { display: none; }
-.round-chip {
-  height: 36px; padding: 0 16px; border-radius: 99px;
-  border: 1.5px solid var(--border); background: var(--surface);
-  color: var(--sub); font-family: var(--mono); font-size: 13px;
-  cursor: pointer; white-space: nowrap; flex-shrink: 0; transition: all 0.12s;
-  display: flex; align-items: center;
-}
+.round-chip { height: 36px; padding: 0 16px; border-radius: 99px; border: 1.5px solid var(--border); background: var(--surface); color: var(--sub); font-family: var(--mono); font-size: 13px; cursor: pointer; white-space: nowrap; flex-shrink: 0; transition: all 0.12s; display: flex; align-items: center; }
 .round-chip.active { background: var(--accent-dim); border-color: var(--accent); color: var(--accent); font-weight: 600; }
 .round-chip:active { opacity: 0.7; }
+
+/* ── Search (pairings + roster) ── */
+.search-wrap { padding: 0 12px 10px; flex-shrink: 0; }
+.search-input { width: 100%; background: var(--raised); border: 1.5px solid var(--border); border-radius: var(--r); color: var(--text); font-family: var(--font); font-size: 14px; padding: 10px 14px; outline: none; -webkit-appearance: none; transition: border-color 0.15s; }
+.search-input:focus { border-color: var(--accent); }
+.search-input::placeholder { color: var(--muted); }
 
 /* ── Scroll area ── */
 .scroll-area { flex: 1; overflow-y: auto; padding: 0 12px 16px; -webkit-overflow-scrolling: touch; }
 
 /* ── Pairing cards ── */
-.pairing-card {
-  background: var(--surface); border: 1px solid var(--border);
-  border-radius: var(--r-lg); margin-bottom: 10px; overflow: hidden;
-}
-/* Table number bar */
-.pairing-table-bar {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 7px 14px 5px;
-  border-bottom: 1px solid var(--border);
-}
+.pairing-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg); margin-bottom: 10px; overflow: hidden; }
+.pairing-table-bar { display: flex; align-items: center; justify-content: space-between; padding: 7px 14px 5px; border-bottom: 1px solid var(--border); }
 .table-n { font-size: 11px; color: var(--muted); font-family: var(--mono); font-weight: 500; }
-.pairing-status-badge {
-  font-family: var(--mono); font-size: 10px; font-weight: 600;
-  padding: 2px 8px; border-radius: 99px;
-}
+.pairing-status-badge { font-family: var(--mono); font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 99px; }
 .pairing-status-badge.done { color: var(--success); background: rgba(107,184,107,0.12); }
 .pairing-status-badge.live { color: var(--accent); background: var(--accent-dim); }
-/* Two players stacked vertically */
 .pairing-players { display: flex; flex-direction: column; }
-.player-slot {
-  padding: 13px 14px; display: flex; align-items: center; gap: 10px;
-  cursor: pointer; transition: background 0.12s; min-width: 0;
-  -webkit-tap-highlight-color: transparent; position: relative;
-}
+.player-slot { padding: 13px 14px; display: flex; align-items: center; gap: 10px; cursor: pointer; transition: background 0.12s; min-width: 0; -webkit-tap-highlight-color: transparent; position: relative; }
 .player-slot:active { background: var(--raised); }
 .player-slot + .player-slot { border-top: 1px solid var(--border); }
-/* Win/loss side stripe */
 .player-slot.winner { background: rgba(107,184,107,0.06); }
-.player-slot.winner::before {
-  content: ''; position: absolute; left: 0; top: 0; bottom: 0;
-  width: 3px; background: var(--success); border-radius: 0 2px 2px 0;
-}
+.player-slot.winner::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--success); border-radius: 0 2px 2px 0; }
 .player-slot.loser { opacity: 0.5; }
-.player-slot.scouted::before {
-  content: ''; position: absolute; left: 0; top: 0; bottom: 0;
-  width: 3px; background: var(--accent); border-radius: 0 2px 2px 0;
-}
+.player-slot.scouted::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--accent); border-radius: 0 2px 2px 0; }
 .player-slot.winner.scouted::before { background: var(--success); }
-/* Name + colors */
-.ps-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
+.ps-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
 .ps-name { font-size: 15px; font-weight: 500; line-height: 1.2; word-break: break-word; }
 .ps-name.bye { color: var(--muted); font-style: italic; font-weight: 300; }
+.ps-realname { font-size: 11px; color: var(--muted); font-family: var(--mono); }
 .ps-colors { display: flex; gap: 5px; align-items: center; min-height: 14px; }
 .cdot { width: 13px; height: 13px; border-radius: 50%; flex-shrink: 0; }
-/* Result badge on the right */
 .ps-result-wrap { flex-shrink: 0; display: flex; flex-direction: column; align-items: center; gap: 2px; }
-.ps-result {
-  font-family: var(--mono); font-size: 13px; font-weight: 700;
-  width: 28px; height: 28px; border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-}
+.ps-result { font-family: var(--mono); font-size: 13px; font-weight: 700; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
 .ps-result.win  { color: var(--success); background: rgba(107,184,107,0.15); }
 .ps-result.loss { color: var(--danger);  background: rgba(217,107,107,0.12); }
 .ps-result.draw { color: var(--sub);     background: var(--raised); }
 .ps-score { font-family: var(--mono); font-size: 10px; color: var(--muted); }
+/* Table scout button */
+.table-scout-btn { background: var(--raised); border: 1px solid var(--border); border-radius: 8px; width: 30px; height: 24px; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.12s; }
+.table-scout-btn:active { opacity: 0.7; }
+.table-scout-btn.has-data { border-color: var(--accent); background: var(--accent-dim); }
+/* Load more */
+.load-more-btn { text-align: center; padding: 14px; font-family: var(--mono); font-size: 12px; color: var(--accent); cursor: pointer; border: 1px dashed var(--border); border-radius: var(--r-lg); margin-top: 4px; }
+.load-more-btn:active { background: var(--raised); }
+
+/* ── Table scout overlay ── */
+#tableScoutOverlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.65); z-index: 200;
+  flex-direction: column; align-items: stretch; justify-content: flex-end;
+}
+.ts-sheet {
+  background: var(--raised); border-radius: 22px 22px 0 0;
+  border: 1px solid var(--border2); border-bottom: none;
+  padding: 0 0 calc(env(safe-area-inset-bottom) + 16px);
+  animation: slideSheet 0.22s cubic-bezier(0.32,0.72,0,1);
+  max-height: 92vh; overflow-y: auto;
+}
+.ts-handle { width: 36px; height: 4px; background: var(--border2); border-radius: 2px; margin: 12px auto 0; }
+.ts-title-bar { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px 4px; }
+.ts-title { font-size: 17px; font-weight: 600; }
+.ts-close { background: none; border: none; color: var(--muted); font-size: 22px; cursor: pointer; padding: 4px 8px; line-height: 1; }
+/* Explanation text */
+.ts-explain {
+  margin: 0 16px 14px;
+  padding: 10px 14px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--r); font-family: var(--mono); font-size: 11px;
+  color: var(--sub); line-height: 1.6;
+}
+/* Status hint */
+.ts-hint { padding: 0 16px 10px; font-family: var(--mono); font-size: 12px; line-height: 1.5; }
+.ts-hint.success { color: var(--success); font-weight: 500; }
+.ts-hint.warn    { color: var(--accent); }
+.ts-hint.muted   { color: var(--muted); }
+/* Two-column color pickers */
+.ts-slots { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 0 12px 12px; }
+.ts-slot { background: var(--surface); border: 1.5px solid var(--border); border-radius: var(--r-lg); padding: 12px 10px; display: flex; flex-direction: column; gap: 8px; }
+.ts-slot.has-colors { border-color: var(--border2); }
+.ts-slot-label {
+  font-family: var(--mono); font-size: 10px; color: var(--sub);
+  text-transform: uppercase; letter-spacing: 1px; text-align: center;
+}
+.ts-slot-sel {
+  font-family: var(--mono); font-size: 11px; color: var(--accent);
+  text-align: center; min-height: 14px;
+}
+.ts-slot-dots { display: flex; gap: 6px; justify-content: center; min-height: 20px; align-items: center; }
+.ts-slot-dot { width: 18px; height: 18px; border-radius: 50%; }
+/* Color grid inside each slot */
+.ts-color-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
+.ts-color-btn {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  padding: 8px 4px; border-radius: var(--r); border: 2px solid var(--border);
+  background: var(--raised); cursor: pointer; transition: all 0.12s;
+  position: relative; -webkit-tap-highlight-color: transparent;
+}
+.ts-color-btn:active { transform: scale(0.93); }
+.ts-color-btn.sel { border-color: var(--c); background: color-mix(in srgb, var(--c) 10%, transparent); }
+.ts-color-btn.sel::after {
+  content: '✓'; position: absolute; top: 3px; right: 5px;
+  font-size: 9px; font-weight: 700; color: var(--c);
+}
+.ts-dot { width: 22px; height: 22px; border-radius: 50%; }
+.ts-clabel { font-family: var(--mono); font-size: 9px; color: var(--sub); text-align: center; line-height: 1.2; }
+/* Players reference strip at bottom of sheet */
+.ts-players-ref {
+  margin: 0 12px 10px;
+  display: flex; gap: 8px;
+}
+.ts-player-ref {
+  flex: 1; background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--r); padding: 8px 10px; display: flex; flex-direction: column; gap: 2px;
+}
+.ts-player-ref-label { font-family: var(--mono); font-size: 9px; color: var(--muted); text-transform: uppercase; }
+.ts-player-ref-name { font-size: 12px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ts-player-ref-real { font-family: var(--mono); font-size: 10px; color: var(--muted); }
+.ts-player-ref-colors { display: flex; gap: 4px; margin-top: 2px; }
+.ts-player-ref-dot { width: 10px; height: 10px; border-radius: 50%; }
+.ts-footer { display: flex; gap: 8px; padding: 0 12px 4px; }
+.ts-btn { flex: 1; height: 46px; border-radius: var(--r-lg); border: 1.5px solid var(--border); background: var(--surface); color: var(--text); font-family: var(--font); font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.15s; }
+.ts-btn:active { opacity: 0.7; }
+.ts-btn.primary { background: var(--accent); color: #0a0b0d; border-color: var(--accent); font-weight: 600; }
 
 /* ── Roster rows ── */
-.roster-row {
-  background: var(--surface); border: 1px solid var(--border);
-  border-radius: var(--r-lg); margin-bottom: 6px; overflow: hidden;
-  transition: border-color 0.12s;
-}
+.roster-row { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg); margin-bottom: 6px; overflow: hidden; transition: border-color 0.12s; }
 .roster-row.scouted { border-color: var(--border2); border-left: 3px solid var(--accent); }
-.roster-top {
-  display: flex; align-items: center; gap: 10px;
-  padding: 13px 16px; cursor: pointer; min-height: 54px;
-}
+.roster-top { display: flex; align-items: center; gap: 10px; padding: 13px 16px; cursor: pointer; min-height: 54px; }
 .roster-top:active { background: var(--raised); }
-.rn { flex: 1; font-size: 14px; font-weight: 500; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rn-wrap { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.rn { font-size: 14px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rn-real { font-size: 11px; color: var(--muted); font-family: var(--mono); }
 .rc { display: flex; gap: 4px; flex-shrink: 0; }
 .rc-dot { width: 13px; height: 13px; border-radius: 50%; }
-.fav-btn {
-  display: flex; align-items: center; justify-content: center;
-  width: 28px; height: 28px; flex-shrink: 0;
-  background: none; border: none; cursor: pointer; padding: 2px;
-  border-radius: 6px; transition: transform 0.15s, background 0.12s;
-  -webkit-tap-highlight-color: transparent;
-}
+.fav-btn { display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; flex-shrink: 0; background: none; border: none; cursor: pointer; padding: 2px; border-radius: 6px; transition: transform 0.15s, background 0.12s; }
 .fav-btn:active { transform: scale(1.3); background: var(--raised); }
 
-/* ── Search ── */
-.search-wrap { padding: 0 16px 10px; flex-shrink: 0; }
-.search-input {
-  width: 100%; background: var(--raised); border: 1.5px solid var(--border);
-  border-radius: var(--r); color: var(--text); font-family: var(--font);
-  font-size: 14px; padding: 10px 14px; outline: none;
-  -webkit-appearance: none; transition: border-color 0.15s;
-}
-.search-input:focus { border-color: var(--accent); }
-.search-input::placeholder { color: var(--muted); }
-
-/* ── Color listing ── */
-.colors-summary {
-  padding: 0 12px 10px; flex-shrink: 0;
-  display: flex; gap: 6px; flex-wrap: wrap;
-}
-.colors-summary-pill {
-  font-family: var(--mono); font-size: 11px; color: var(--sub);
-  background: var(--raised); border: 1px solid var(--border);
-  border-radius: 99px; padding: 4px 10px;
-}
+/* ── Colors listing ── */
+.colors-summary { padding: 0 12px 10px; flex-shrink: 0; display: flex; gap: 6px; flex-wrap: wrap; }
+.colors-summary-pill { font-family: var(--mono); font-size: 11px; color: var(--sub); background: var(--raised); border: 1px solid var(--border); border-radius: 99px; padding: 4px 10px; }
 .colors-summary-pill.unknown { color: var(--muted); border-style: dashed; }
 .combo-group { margin-bottom: 10px; border-radius: var(--r-lg); overflow: hidden; border: 1px solid var(--border); }
-.combo-header {
-  display: flex; align-items: center; gap: 8px;
-  padding: 12px 14px; background: var(--raised);
-  font-family: var(--mono); font-size: 12px; color: var(--sub);
-}
+.combo-header { display: flex; align-items: center; gap: 8px; padding: 12px 14px; background: var(--raised); font-family: var(--mono); font-size: 12px; color: var(--sub); }
 .combo-header-left { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0; }
 .combo-label { font-size: 13px; color: var(--text); font-weight: 500; }
 .combo-count { margin-left: auto; font-weight: 600; color: var(--accent); font-size: 13px; flex-shrink: 0; }
-/* Win rate bar */
 .combo-winbar-wrap { padding: 0 14px 12px; background: var(--raised); border-bottom: 1px solid var(--border); }
-.combo-winbar-label {
-  display: flex; justify-content: space-between; align-items: center;
-  font-family: var(--mono); font-size: 10px; color: var(--sub); margin-bottom: 5px;
-}
+.combo-winbar-label { display: flex; justify-content: space-between; align-items: center; font-family: var(--mono); font-size: 10px; color: var(--sub); margin-bottom: 5px; }
 .combo-winrate-val { font-size: 13px; font-weight: 600; color: var(--text); }
-.combo-winbar-track {
-  height: 6px; background: var(--border); border-radius: 3px; overflow: hidden;
-}
-.combo-winbar-fill {
-  height: 100%; border-radius: 3px;
-  transition: width 0.4s cubic-bezier(0.4,0,0.2,1);
-}
+.combo-winbar-track { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+.combo-winbar-fill { height: 100%; border-radius: 3px; transition: width 0.4s cubic-bezier(0.4,0,0.2,1); }
 .combo-winbar-record { font-family: var(--mono); font-size: 10px; color: var(--muted); }
-/* Player list */
 .combo-players { background: var(--surface); }
-.combo-player {
-  padding: 11px 14px; font-size: 13px; color: var(--text);
-  border-bottom: 1px solid var(--border); cursor: pointer;
-  transition: background 0.1s; display: flex; align-items: center; gap: 8px;
-}
+.combo-player { padding: 11px 14px; font-size: 13px; color: var(--text); border-bottom: 1px solid var(--border); cursor: pointer; transition: background 0.1s; display: flex; align-items: center; gap: 8px; }
 .combo-player:last-child { border-bottom: none; }
 .combo-player:active { background: var(--raised); }
 .combo-player-name { flex: 1; }
 .combo-player-rec { font-family: var(--mono); font-size: 11px; color: var(--muted); flex-shrink: 0; }
 
-/* ── History screen ── */
-.history-item {
-  background: var(--surface); border: 1px solid var(--border);
-  border-radius: var(--r-lg); padding: 14px 16px; margin-bottom: 8px;
-  cursor: pointer; transition: all 0.12s;
-}
+/* ── History ── */
+.history-item { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 14px 16px; margin-bottom: 8px; cursor: pointer; transition: all 0.12s; }
 .history-item:active { background: var(--raised); }
 .history-item.current { border-color: var(--accent); background: var(--accent-dim); }
 .hi-id { font-family: var(--mono); font-size: 10px; color: var(--muted); margin-bottom: 4px; }
 .hi-name { font-size: 15px; font-weight: 600; margin-bottom: 6px; }
 .hi-meta { display: flex; gap: 10px; font-family: var(--mono); font-size: 11px; color: var(--sub); }
 .hi-scouted { color: var(--accent); }
-.hi-clear-btn {
-  display: flex; align-items: center; justify-content: center;
-  gap: 6px; width: 100%; margin-top: 4px; padding: 12px;
-  background: none; border: 1px solid var(--border); border-radius: var(--r-lg);
-  color: var(--muted); font-family: var(--font); font-size: 13px; cursor: pointer;
-}
+.hi-clear-btn { display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; margin-top: 4px; padding: 12px; background: none; border: 1px solid var(--border); border-radius: var(--r-lg); color: var(--muted); font-family: var(--font); font-size: 13px; cursor: pointer; }
 .hi-clear-btn:active { color: var(--danger); border-color: var(--danger); }
 
-/* ── Standings screen ── */
-.standings-refresh {
-  margin-left: auto; font-size: 12px; font-family: var(--mono);
-  color: var(--sub); background: none; border: 1px solid var(--border);
-  border-radius: 99px; padding: 4px 12px; cursor: pointer;
-}
+/* ── Standings ── */
+.standings-refresh { margin-left: auto; font-size: 12px; font-family: var(--mono); color: var(--sub); background: none; border: 1px solid var(--border); border-radius: 99px; padding: 4px 12px; cursor: pointer; }
 .standings-refresh:active { color: var(--accent); border-color: var(--accent); }
-.standing-card {
-  background: var(--surface); border: 1px solid var(--border);
-  border-radius: var(--r-lg); margin-bottom: 6px; overflow: hidden;
-  display: flex; align-items: stretch; min-height: 62px; cursor: pointer;
-  transition: border-color 0.12s;
-}
+.standing-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg); margin-bottom: 6px; overflow: hidden; display: flex; align-items: stretch; min-height: 62px; cursor: pointer; transition: border-color 0.12s; }
 .standing-card:active { background: var(--raised); }
 .standing-card.fav { border-left: 3px solid #f0c04088; }
-.standing-rank {
-  width: 48px; flex-shrink: 0; display: flex; align-items: center;
-  justify-content: center; flex-direction: column; gap: 2px;
-  background: var(--raised); border-right: 1px solid var(--border);
-}
+.standing-rank { width: 48px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 2px; background: var(--raised); border-right: 1px solid var(--border); }
 .rank-num { font-family: var(--mono); font-size: 16px; font-weight: 500; color: var(--text); }
 .rank-top1 { color: #f0c040; }
 .rank-top2 { color: #b0b8c8; }
 .rank-top3 { color: #c8956c; }
-.standing-body {
-  flex: 1; padding: 10px 14px; display: flex; flex-direction: column;
-  justify-content: center; gap: 5px; min-width: 0;
-}
+.standing-body { flex: 1; padding: 10px 14px; display: flex; flex-direction: column; justify-content: center; gap: 3px; min-width: 0; }
 .standing-name { font-size: 14px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.standing-realname { font-size: 11px; color: var(--muted); font-family: var(--mono); }
 .standing-stats { display: flex; gap: 10px; font-family: var(--mono); font-size: 11px; color: var(--sub); flex-wrap: wrap; }
 .standing-colors { display: flex; gap: 4px; align-items: center; }
-.standing-right {
-  display: flex; flex-direction: column; align-items: center;
-  justify-content: center; padding: 0 14px; gap: 2px; flex-shrink: 0;
-}
+.standing-right { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 0 14px; gap: 2px; flex-shrink: 0; }
 .standing-pts { font-family: var(--mono); font-size: 18px; font-weight: 500; color: var(--accent); }
 .standing-pts-label { font-family: var(--mono); font-size: 9px; color: var(--muted); text-transform: uppercase; }
-.standings-filter {
-  display: flex; gap: 6px; padding: 0 16px 10px; flex-shrink: 0;
-}
-.filter-chip {
-  padding: 5px 14px; border-radius: 99px; font-family: var(--mono); font-size: 11px;
-  border: 1.5px solid var(--border); color: var(--sub); background: var(--surface);
-  cursor: pointer; transition: all 0.12s; white-space: nowrap;
-}
+.standings-filter { display: flex; gap: 6px; padding: 0 16px 10px; flex-shrink: 0; }
+.filter-chip { padding: 5px 14px; border-radius: 99px; font-family: var(--mono); font-size: 11px; border: 1.5px solid var(--border); color: var(--sub); background: var(--surface); cursor: pointer; transition: all 0.12s; white-space: nowrap; }
 .filter-chip.active { background: var(--accent-dim); border-color: var(--accent); color: var(--accent); }
-.standings-no-favs {
-  margin: 0 16px; padding: 16px;
-  background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg);
-  font-family: var(--mono); font-size: 12px; color: var(--sub); text-align: center; line-height: 1.8;
-}
-.bottom-nav {
-  height: var(--nav-h); flex-shrink: 0;
-  background: var(--surface); border-top: 1px solid var(--border);
-  display: flex; align-items: stretch;
-  padding-bottom: env(safe-area-inset-bottom);
-}
-.nav-item {
-  flex: 1; display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  gap: 3px; cursor: pointer; border: none; background: none;
-  color: var(--muted); transition: color 0.15s;
-  font-family: var(--font); font-size: 10px; font-weight: 500;
-  letter-spacing: 0.3px; text-transform: uppercase;
-  -webkit-tap-highlight-color: transparent;
-}
+.standings-no-favs { margin: 0 16px; padding: 16px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg); font-family: var(--mono); font-size: 12px; color: var(--sub); text-align: center; line-height: 1.8; }
+
+/* ── Bottom nav ── */
+.bottom-nav { height: var(--nav-h); flex-shrink: 0; background: var(--surface); border-top: 1px solid var(--border); display: flex; align-items: stretch; padding-bottom: env(safe-area-inset-bottom); }
+.nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; cursor: pointer; border: none; background: none; color: var(--muted); transition: color 0.15s; font-family: var(--font); font-size: 10px; font-weight: 500; letter-spacing: 0.3px; text-transform: uppercase; }
 .nav-item:active { opacity: 0.6; }
 .nav-item.active { color: var(--accent); }
 .nav-icon { font-size: 20px; line-height: 1; }
 
-/* ── States ── */
-.state-box {
-  display: flex; flex-direction: column; align-items: center;
-  justify-content: center; padding: 4rem 2rem; gap: 10px;
-  color: var(--muted); font-family: var(--mono); font-size: 13px;
-  text-align: center; line-height: 1.6;
-}
-.spinner {
-  width: 28px; height: 28px; border: 2px solid var(--border);
-  border-top-color: var(--accent); border-radius: 50%;
-  animation: spin 0.75s linear infinite;
-}
-@keyframes spin { to { transform: rotate(360deg); } }
-
-.err-box {
-  margin: 12px 16px; padding: 12px 14px;
-  background: rgba(217,107,107,0.08); border: 1px solid var(--danger);
-  border-radius: var(--r); font-family: var(--mono); font-size: 12px;
-  color: var(--danger); line-height: 1.6;
-}
-
-/* ── Bottom sheet (color picker modal) ── */
-.sheet-overlay {
-  display: none; position: fixed; inset: 0;
-  background: rgba(0,0,0,0.6); z-index: 100;
-  align-items: flex-end; justify-content: center;
-}
+/* ── Bottom sheet ── */
+.sheet-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 100; align-items: flex-end; justify-content: center; }
 .sheet-overlay.open { display: flex; }
-.sheet {
-  width: 100%; max-width: 500px;
-  background: var(--raised); border-radius: 22px 22px 0 0;
-  border: 1px solid var(--border2); border-bottom: none;
-  padding: 0 0 calc(env(safe-area-inset-bottom) + 16px);
-  animation: slideSheet 0.25s cubic-bezier(0.32,0.72,0,1);
-}
+.sheet { width: 100%; max-width: 500px; background: var(--raised); border-radius: 22px 22px 0 0; border: 1px solid var(--border2); border-bottom: none; padding: 0 0 calc(env(safe-area-inset-bottom)+16px); animation: slideSheet 0.25s cubic-bezier(0.32,0.72,0,1); }
 @keyframes slideSheet { from { transform: translateY(100%); } to { transform: translateY(0); } }
 .sheet-handle { width: 36px; height: 4px; background: var(--border2); border-radius: 2px; margin: 12px auto 0; }
-.sheet-name { font-size: 18px; font-weight: 600; padding: 14px 20px 4px; }
+.sheet-name { font-size: 18px; font-weight: 600; padding: 14px 20px 2px; }
+.sheet-realname { font-size: 12px; color: var(--muted); font-family: var(--mono); padding: 0 20px 6px; display: none; }
 .sheet-hint { font-size: 12px; color: var(--sub); font-family: var(--mono); padding: 0 20px 16px; }
-.sheet-stats {
-  display: flex; gap: 8px; padding: 0 20px 14px; flex-wrap: wrap;
-}
-.sheet-stat {
-  background: var(--surface); border: 1px solid var(--border); border-radius: var(--r);
-  padding: 6px 12px; font-family: var(--mono); font-size: 12px; color: var(--sub);
-  display: flex; gap: 6px; align-items: center;
-}
+.sheet-stats { display: flex; gap: 8px; padding: 0 20px 14px; flex-wrap: wrap; }
+.sheet-stat { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); padding: 6px 12px; font-family: var(--mono); font-size: 12px; color: var(--sub); display: flex; gap: 6px; align-items: center; }
 .sheet-stat strong { color: var(--text); font-size: 14px; }
-.sheet-colors {
-  display: grid; grid-template-columns: repeat(3, 1fr);
-  gap: 8px; padding: 0 16px 16px;
-}
-.sheet-color-btn {
-  display: flex; flex-direction: column; align-items: center; gap: 6px;
-  padding: 14px 8px; border-radius: var(--r-lg);
-  border: 2px solid var(--border); background: var(--surface);
-  cursor: pointer; transition: all 0.15s; -webkit-tap-highlight-color: transparent;
-  position: relative;
-}
+.sheet-colors { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; padding: 0 16px 16px; }
+.sheet-color-btn { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 14px 8px; border-radius: var(--r-lg); border: 2px solid var(--border); background: var(--surface); cursor: pointer; transition: all 0.15s; position: relative; }
 .sheet-color-btn:active { transform: scale(0.95); }
-.sheet-color-btn.sel { border-color: var(--c); background: var(--surface); }
-.sheet-color-btn.sel::after {
-  content: '✓'; position: absolute; top: 6px; right: 8px;
-  font-size: 11px; font-weight: 700; color: var(--c);
-}
+.sheet-color-btn.sel { border-color: var(--c); }
+.sheet-color-btn.sel::after { content: '✓'; position: absolute; top: 6px; right: 8px; font-size: 11px; font-weight: 700; color: var(--c); }
 .sc-circle { width: 36px; height: 36px; border-radius: 50%; }
 .sc-label { font-family: var(--mono); font-size: 11px; color: var(--sub); }
 .sheet-footer { display: flex; gap: 8px; padding: 0 16px; }
-.sheet-btn {
-  flex: 1; height: 46px; border-radius: var(--r-lg); border: 1.5px solid var(--border);
-  background: var(--surface); color: var(--text); font-family: var(--font);
-  font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.15s;
-}
+.sheet-btn { flex: 1; height: 46px; border-radius: var(--r-lg); border: 1.5px solid var(--border); background: var(--surface); color: var(--text); font-family: var(--font); font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.15s; }
 .sheet-btn:active { opacity: 0.7; }
 .sheet-btn.primary { background: var(--accent); color: #0a0b0d; border-color: var(--accent); }
 
+/* ── States ── */
+.state-box { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 4rem 2rem; gap: 10px; color: var(--muted); font-family: var(--mono); font-size: 13px; text-align: center; line-height: 1.6; }
+.spinner { width: 28px; height: 28px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.75s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.err-box { margin: 12px 16px; padding: 12px 14px; background: rgba(217,107,107,0.08); border: 1px solid var(--danger); border-radius: var(--r); font-family: var(--mono); font-size: 12px; color: var(--danger); line-height: 1.6; }
+
 /* ── Toast ── */
-.toast {
-  position: fixed; bottom: calc(var(--nav-h) + 12px); left: 50%;
-  transform: translateX(-50%); z-index: 200;
-  background: var(--card); border: 1px solid var(--border2);
-  color: var(--text); font-family: var(--mono); font-size: 12px;
-  padding: 10px 18px; border-radius: 99px; white-space: nowrap;
-  animation: fadeInUp 0.2s ease;
-}
+.toast { position: fixed; bottom: calc(var(--nav-h)+12px); left: 50%; transform: translateX(-50%); z-index: 300; background: var(--card); border: 1px solid var(--border2); color: var(--text); font-family: var(--mono); font-size: 12px; padding: 10px 18px; border-radius: 99px; white-space: nowrap; animation: fadeInUp 0.2s ease; }
 .toast.err { border-color: var(--danger); color: var(--danger); background: rgba(217,107,107,0.1); }
 @keyframes fadeInUp { from { opacity:0; transform: translateX(-50%) translateY(8px); } to { opacity:1; transform: translateX(-50%) translateY(0); } }
-
-/* Scrollbar */
 ::-webkit-scrollbar { width: 3px; }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
 </style>
 </head>
 <body>
-<div class="app">
 
-  <!-- Header -->
+<!-- Login screen -->
+<div id="loginScreen">
+  <div class="login-logo">Scout<em>.</em></div>
+  <div class="login-sub">Lorcana Tournament Scouting</div>
+  <div class="login-box">
+    <div class="login-label">Mot de passe</div>
+    <input id="loginInput" type="password" placeholder="Entrer le mot de passe" autocomplete="current-password" />
+    <div id="loginErr"></div>
+    <button id="loginBtn" onclick="submitLogin()">Accéder →</button>
+    <div id="loginHint"></div>
+  </div>
+</div>
+
+<!-- App -->
+<div id="appRoot">
+
   <header class="app-header">
     <div class="logo-mark">Scout<em>.</em></div>
     <div class="event-id-form">
@@ -474,13 +377,13 @@ body {
       </div>
       <button class="load-btn" onclick="loadEvent()">Go</button>
     </div>
+    <span id="queueBadge"></span>
     <div id="wsPill" class="ws-pill">●</div>
   </header>
 
-  <!-- Content -->
   <div class="content">
 
-    <!-- PAIRINGS screen -->
+    <!-- PAIRINGS -->
     <div class="screen active" id="screen-pairings">
       <div class="screen-header">
         <div>
@@ -489,12 +392,15 @@ body {
         </div>
       </div>
       <div class="round-strip" id="roundStrip"></div>
+      <div class="search-wrap">
+        <input class="search-input" id="pairingsSearch" type="text" placeholder="Rechercher un joueur…" oninput="onPairingsSearch(this.value)" />
+      </div>
       <div class="scroll-area" id="pairingsScroll">
         <div class="state-box">Charge un événement pour commencer</div>
       </div>
     </div>
 
-    <!-- ROSTER screen -->
+    <!-- ROSTER -->
     <div class="screen" id="screen-roster">
       <div class="screen-header">
         <div>
@@ -510,7 +416,7 @@ body {
       </div>
     </div>
 
-    <!-- COLORS screen -->
+    <!-- COLORS -->
     <div class="screen" id="screen-colors">
       <div class="screen-header">
         <div>
@@ -523,7 +429,7 @@ body {
       </div>
     </div>
 
-    <!-- HISTORY screen -->
+    <!-- HISTORY -->
     <div class="screen" id="screen-history">
       <div class="screen-header">
         <div>
@@ -536,7 +442,7 @@ body {
       </div>
     </div>
 
-    <!-- STANDINGS screen -->
+    <!-- STANDINGS -->
     <div class="screen" id="screen-standings">
       <div class="screen-header">
         <div>
@@ -556,32 +462,22 @@ body {
 
   </div>
 
-  <!-- Bottom nav -->
   <nav class="bottom-nav">
-    <button class="nav-item active" data-screen="pairings" onclick="switchScreen('pairings',this)">
-      <div class="nav-icon">⚔️</div>Pairings
-    </button>
-    <button class="nav-item" data-screen="roster" onclick="switchScreen('roster',this)">
-      <div class="nav-icon">👥</div>Roster
-    </button>
-    <button class="nav-item" data-screen="colors" onclick="switchScreen('colors',this)">
-      <div class="nav-icon">🎨</div>Couleurs
-    </button>
-    <button class="nav-item" data-screen="standings" onclick="switchScreen('standings',this)">
-      <div class="nav-icon">🏆</div>Standings
-    </button>
-    <button class="nav-item" data-screen="history" onclick="switchScreen('history',this)">
-      <div class="nav-icon">🕐</div>Historique
-    </button>
+    <button class="nav-item active" data-screen="pairings" onclick="switchScreen('pairings',this)"><div class="nav-icon">⚔️</div>Pairings</button>
+    <button class="nav-item" data-screen="roster" onclick="switchScreen('roster',this)"><div class="nav-icon">👥</div>Roster</button>
+    <button class="nav-item" data-screen="colors" onclick="switchScreen('colors',this)"><div class="nav-icon">🎨</div>Couleurs</button>
+    <button class="nav-item" data-screen="standings" onclick="switchScreen('standings',this)"><div class="nav-icon">🏆</div>Standings</button>
+    <button class="nav-item" data-screen="history" onclick="switchScreen('history',this)"><div class="nav-icon">🕐</div>Historique</button>
   </nav>
 
 </div>
 
-<!-- Bottom sheet (color picker) -->
+<!-- Bottom sheet (player color picker) -->
 <div class="sheet-overlay" id="sheetOverlay" onclick="closeSheet(event)">
   <div class="sheet">
     <div class="sheet-handle"></div>
     <div class="sheet-name" id="sheetName"></div>
+    <div class="sheet-realname" id="sheetRealName"></div>
     <div class="sheet-stats" id="sheetStats" style="display:none"></div>
     <div class="sheet-hint" id="sheetHint">Sélectionne jusqu'à 2 couleurs</div>
     <div class="sheet-colors" id="sheetColors"></div>
@@ -592,640 +488,31 @@ body {
   </div>
 </div>
 
-<script>
-// ── Config ───────────────────────────────────────────────────────────────────
-const IS_LOCAL = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
-const SERVER   = IS_LOCAL ? 'http://localhost:3001' : `${location.protocol}//${location.host}`;
-const WS_URL   = IS_LOCAL ? 'ws://localhost:3001'
-               : (location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host;
-
-const COLORS = [
-  { id:'amber',     label:'Ambre',      hex:'#E9A326' },
-  { id:'amethyst',  label:'Améthyste',  hex:'#9B59B6' },
-  { id:'emerald',   label:'Émeraude',   hex:'#27AE60' },
-  { id:'ruby',      label:'Rubis',      hex:'#C0392B' },
-  { id:'sapphire',  label:'Saphir',     hex:'#2980B9' },
-  { id:'steel',     label:'Acier',      hex:'#7F8C8D' },
-];
-
-// ── State ────────────────────────────────────────────────────────────────────
-let S = {
-  eventId: null, meta: null,
-  players: {}, rounds: [], currentRound: 0,
-  sheetPlayer: null, sheetColors: [],
-  activeScreen: 'pairings',
-};
-let ws = null;
-
-// ── WebSocket ────────────────────────────────────────────────────────────────
-function connectWS() {
-  if (ws) ws.close();
-  ws = new WebSocket(WS_URL);
-  ws.onopen  = () => setPill(true);
-  ws.onclose = () => { setPill(false); setTimeout(connectWS, 3000); };
-  ws.onmessage = e => {
-    const d = JSON.parse(e.data);
-    if (d.type === 'playerUpdate' && d.eventId === S.eventId) {
-      if (!S.players[d.player]) S.players[d.player] = {};
-      S.players[d.player].colors = d.colors;
-      renderAll();
-    }
-  };
-}
-function setPill(on) {
-  const p = document.getElementById('wsPill');
-  p.textContent = on ? '● live' : '●';
-  p.className = 'ws-pill' + (on ? ' on' : '');
-}
-
-// ── Load event ────────────────────────────────────────────────────────────────
-async function loadEvent(idOverride) {
-  const raw = idOverride || document.getElementById('idInput').value.trim();
-  // Accept full URL or just ID
-  const match = String(raw).match(/(\d{4,8})/);
-  if (!match) return showToast('ID invalide', true);
-  const id = match[1];
-  S.eventId = id;
-  document.getElementById('idInput').value = id;
-  document.getElementById('idInput').blur();
-
-  setScroll('pairings', `<div class="state-box"><div class="spinner"></div><span>Chargement…</span></div>`);
-  switchScreen('pairings', document.querySelector('[data-screen="pairings"]'));
-
-  try {
-    const res = await fetch(`${SERVER}/api/events/${id}`);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    applyData(await res.json());
-  } catch(err) {
-    setScroll('pairings', `<div class="err-box">Erreur: ${err.message}<br>Le serveur tourne-t-il ?</div>`);
-  }
-}
-
-function applyData(data) {
-  S.meta    = data.meta;
-  S.players = data.players || {};
-  S.rounds  = data.rounds  || [];
-  S.currentRound = 0;
-  standingsData = []; // reset standings when event changes
-  const pc = Object.keys(S.players).length;
-  const sc = Object.values(S.players).filter(p=>p.colors?.length>0).length;
-  localStorage.setItem('lorcana-last-event', S.eventId);
-  addHistory(S.eventId, data.meta, pc, sc);
-  renderAll();
-  connectWS();
-}
-
-// ── Render all ────────────────────────────────────────────────────────────────
-function renderAll() {
-  renderPairings(); renderRoster(); renderColors(); renderStandings();
-  if (S.eventId) {
-    const sc = Object.values(S.players).filter(p=>p.colors?.length>0).length;
-    updateHistoryScout(S.eventId, sc);
-  }
-}
-
-// ── Pairings ─────────────────────────────────────────────────────────────────
-function renderPairings() {
-  const name = S.meta?.title || (S.eventId ? `Tournoi #${S.eventId}` : '—');
-  document.getElementById('pairingsEventName').textContent = name;
-
-  // Round chips
-  const strip = document.getElementById('roundStrip');
-  if (S.rounds.length) {
-    strip.innerHTML = S.rounds.map((r,i) =>
-      `<div class="round-chip${i===S.currentRound?' active':''}" onclick="setRound(${i})">R${r.num}</div>`
-    ).join('');
-  } else {
-    strip.innerHTML = '';
-  }
-
-  const round = S.rounds[S.currentRound];
-  if (!round) {
-    setScroll('pairings', `<div class="state-box">Pas de pairings disponibles<br>pour ce tournoi</div>`);
-    return;
-  }
-
-  const html = round.pairings.map(p => {
-    const bye2 = !p.p2 || p.p2 === 'BYE';
-    const r1 = p.winner === 'p1' ? 'win' : p.winner === 'p2' ? 'loss' : p.winner === 'draw' ? 'draw' : null;
-    const r2 = p.winner === 'p2' ? 'win' : p.winner === 'p1' ? 'loss' : p.winner === 'draw' ? 'draw' : null;
-    const isDone = p.isComplete;
-    const statusBadge = isDone
-      ? `<span class="pairing-status-badge done">✓ Terminé</span>`
-      : `<span class="pairing-status-badge live">En cours</span>`;
-    return `<div class="pairing-card">
-      <div class="pairing-table-bar">
-        <span class="table-n">Table ${p.table}</span>
-        ${statusBadge}
-      </div>
-      <div class="pairing-players">
-        ${playerSlot(p.p1, r1, p.gWW, p.gWL, p.winner === 'p1')}
-        ${bye2
-          ? `<div class="player-slot"><div class="ps-main"><div class="ps-name bye">BYE</div></div></div>`
-          : playerSlot(p.p2, r2, p.winner==='p2'?p.gWW:p.gWL, p.winner==='p2'?p.gWL:p.gWW, p.winner === 'p2')}
-      </div>
-    </div>`;
-  }).join('');
-
-  setScroll('pairings', html || '<div class="state-box">Aucun pairing</div>');
-}
-
-function playerSlot(name, result, gW, gL, isWinner) {
-  const p = S.players[name] || {colors:[]};
-  const sc = p.colors?.length > 0;
-  const dots = (p.colors||[]).map(cid => {
-    const c = COLORS.find(x=>x.id===cid);
-    return c ? `<div class="cdot" style="background:${c.hex}" title="${c.label}"></div>` : '';
-  }).join('');
-  const winCls = result === 'win' ? ' winner' : result === 'loss' ? ' loser' : '';
-  const scoutCls = sc ? ' scouted' : '';
-
-  let resultHtml = '';
-  if (result) {
-    const label = result === 'win' ? 'W' : result === 'loss' ? 'L' : 'D';
-    const score = (gW != null && gL != null) ? `<div class="ps-score">${gW}-${gL}</div>` : '';
-    resultHtml = `<div class="ps-result-wrap">
-      <div class="ps-result ${result}">${label}</div>
-      ${score}
-    </div>`;
-  }
-
-  return `<div class="player-slot${winCls}${scoutCls}" data-open-sheet="${esc(name)}">
-    <div class="ps-main">
-      <div class="ps-name">${esc(name)}</div>
-      ${dots ? `<div class="ps-colors">${dots}</div>` : ''}
+<!-- Table scout overlay -->
+<div id="tableScoutOverlay" onclick="if(event.target===this)closeTableScout()">
+  <div class="ts-sheet">
+    <div class="ts-handle"></div>
+    <div class="ts-title-bar">
+      <div class="ts-title" id="tsTitle">Scout table</div>
+      <button class="ts-close" onclick="closeTableScout()">✕</button>
     </div>
-    ${resultHtml}
-  </div>`;
-}
-
-function setRound(i) {
-  S.currentRound = i;
-  renderPairings();
-}
-
-// ── Roster ───────────────────────────────────────────────────────────────────
-function favsKey() { return `lorcana-favs-${S.eventId||'_'}`; }
-function getFavs() { try { return JSON.parse(localStorage.getItem(favsKey())||'[]'); } catch { return []; } }
-function saveFavs(f) { localStorage.setItem(favsKey(), JSON.stringify(f)); }
-function isFav(name) { return getFavs().includes(name); }
-function toggleFav(name) {
-  const favs = getFavs();
-  const idx = favs.indexOf(name);
-  if (idx>=0) favs.splice(idx,1); else favs.push(name);
-  saveFavs(favs);
-  renderRoster();
-  renderStandings();
-}
-
-function renderRoster() {
-  const pc = Object.keys(S.players).length;
-  const sc = Object.values(S.players).filter(p=>p.colors?.length>0).length;
-  document.getElementById('rosterCount').textContent =
-    pc ? `${pc} joueurs · ${sc} scouttés` : '—';
-
-  const q = (document.getElementById('searchInput')?.value||'').toLowerCase();
-  const entries = Object.entries(S.players)
-    .filter(([n])=>n.toLowerCase().includes(q))
-    .sort(([a],[b])=>a.localeCompare(b));
-
-  if (!entries.length) {
-    setScroll('roster', '<div class="state-box">Aucun joueur</div>');
-    return;
-  }
-
-  const html = entries.map(([name, data]) => {
-    const colors = data.colors||[];
-    const sc = colors.length > 0;
-    const fav = isFav(name);
-    const dots = colors.map(cid=>{
-      const c=COLORS.find(x=>x.id===cid);
-      return c?`<div class="rc-dot" style="background:${c.hex}"></div>`:'';
-    }).join('');
-    const safeId = btoa(unescape(encodeURIComponent(name))).replace(/[^a-zA-Z0-9]/g,'_');
-    const starSvg = fav
-      ? `<svg width="18" height="18" viewBox="0 0 24 24" fill="var(--accent)" stroke="var(--accent)" stroke-width="1.5"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>`
-      : `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.5"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>`;
-    return `<div class="roster-row${sc?' scouted':''}" id="rr-${safeId}" data-player="${esc(name)}">
-      <div class="roster-top" data-action="open-sheet">
-        <button class="fav-btn${fav?' on':''}" title="Favori" onclick="event.stopPropagation();toggleFav(this.closest('.roster-row').dataset.player)">${starSvg}</button>
-        <div class="rn">${esc(name)}</div>
-        <div class="rc">${dots}</div>
-      </div>
-    </div>`;
-  }).join('');
-  setScroll('roster', html);
-}
-
-// Roster delegation
-document.addEventListener('click', async e => {
-  // Sheet from pairings / colors listing
-  const slotEl = e.target.closest('[data-open-sheet]');
-  if (slotEl) { openSheet(slotEl.dataset.openSheet); return; }
-
-  // Roster actions
-  const row = e.target.closest('.roster-row');
-  if (!row) return;
-  const name = row.dataset.player;
-  if (!name) return;
-  const action = e.target.closest('[data-action]')?.dataset.action;
-  if (!action) return;
-  e.stopPropagation();
-
-  if (action === 'open-sheet') { openSheet(name); return; }
-  if (action === 'fav') { toggleFav(name); return; }
-});
-
-async function patchColors(name, colors) {
-  if (!S.players[name]) S.players[name]={};
-  S.players[name].colors = colors;
-  renderAll();
-  try {
-    await fetch(`${SERVER}/api/events/${S.eventId}/players/${encodeURIComponent(name)}`, {
-      method:'PATCH', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({colors}),
-    });
-  } catch(e) {}
-}
-
-// ── Standings ─────────────────────────────────────────────────────────────────
-let standingsData = [];       // raw from server
-let standingsFilter = 'favs'; // 'favs' | 'all'
-
-async function loadStandings() {
-  if (!S.eventId) return;
-  setScroll('standings', `<div class="state-box"><div class="spinner"></div><span>Chargement standings…</span></div>`);
-  try {
-    const res = await fetch(`${SERVER}/api/events/${S.eventId}/standings`);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const raw = await res.json();
-    // Server returns flat array of standings
-    standingsData = Array.isArray(raw) ? raw : (raw.standings || []);
-    renderStandings();
-  } catch(err) {
-    setScroll('standings', `<div class="err-box">Impossible de charger les standings.<br>${err.message}</div>`);
-  }
-}
-
-function setStandingsFilter(f, el) {
-  standingsFilter = f;
-  document.querySelectorAll('.filter-chip').forEach(c=>c.classList.remove('active'));
-  el.classList.add('active');
-  renderStandings();
-}
-
-function renderStandings() {
-  if (!S.eventId) {
-    setScroll('standings', `<div class="state-box">Charge un événement pour commencer</div>`);
-    return;
-  }
-
-  const favs = getFavs();
-  let data = standingsData;
-
-  // Update sub title
-  const sub = data.length ? `${data.length} joueurs` : (S.eventId ? `Tournoi #${S.eventId}` : '—');
-  document.getElementById('standingsSub').textContent = sub;
-
-  if (standingsFilter === 'favs') {
-    if (!favs.length) {
-      setScroll('standings', `<div class="standings-no-favs">Aucun favori.<br>Ajoute des joueurs en favori<br>depuis l'onglet <b>Roster</b> avec ⭐</div>`);
-      return;
-    }
-    if (!data.length) {
-      // Show favs with no ranking data
-      setScroll('standings', favs.map(name => standingCard(name, null, favs)).join('') );
-      return;
-    }
-    data = data.filter(s => favs.includes(s.name));
-    if (!data.length) {
-      setScroll('standings', `<div class="standings-no-favs">Aucun de tes favoris<br>n'apparaît dans ce standings.</div>`);
-      return;
-    }
-  }
-
-  if (!data.length) {
-    setScroll('standings', `<div class="state-box">Pas de standings disponibles.<br><span style="font-size:11px;line-height:1.8">Les standings ne sont accessibles<br>que pendant un tournoi en cours.<br>Appuie sur ↻ Refresh en cours de ronde.</span></div>`);
-    return;
-  }
-
-  setScroll('standings', data.map(s => standingCard(s.name, s, favs)).join(''));
-}
-
-function standingCard(name, s, favs) {
-  const isFavPlayer = favs.includes(name);
-  const p = S.players[name] || {colors:[]};
-  const dots = (p.colors||[]).map(cid=>{
-    const c = COLORS.find(x=>x.id===cid);
-    return c ? `<div class="cdot" style="background:${c.hex};width:11px;height:11px"></div>` : '';
-  }).join('');
-
-  const rank = s?.rank ?? '—';
-  const pts  = s?.points ?? '—';
-  const rec  = s ? `${s.wins||0}W-${s.losses||0}L${s.draws?'-'+s.draws+'D':''}` : '';
-  const rankClass = rank===1?'rank-top1':rank===2?'rank-top2':rank===3?'rank-top3':'';
-
-  return `<div class="standing-card${isFavPlayer?' fav':''}" data-open-sheet="${esc(name)}">
-    <div class="standing-rank">
-      <div class="rank-num ${rankClass}">${rank}</div>
+    <div class="ts-explain">
+      Note les couleurs que tu vois sur la table, <b>sans savoir qui est qui</b>.<br>
+      L'app croisera avec tes scoutings pour identifier automatiquement.
     </div>
-    <div class="standing-body">
-      <div class="standing-name">${esc(name)}</div>
-      <div class="standing-stats">
-        ${rec ? `<span>${rec}</span>` : ''}
-        ${dots ? `<div class="standing-colors">${dots}</div>` : ''}
-      </div>
+    <div class="ts-hint muted" id="tsHint"></div>
+    <div id="tsBody"></div>
+    <div id="tsPlayersRef" class="ts-players-ref" style="display:none"></div>
+    <div class="ts-footer">
+      <button class="ts-btn" onclick="closeTableScout()">Fermer</button>
+      <button class="ts-btn primary" onclick="confirmTableScout()">Valider →</button>
     </div>
-    <div class="standing-right">
-      <div class="standing-pts">${pts}</div>
-      <div class="standing-pts-label">pts</div>
-    </div>
-  </div>`;
-}
+  </div>
+</div>
 
-// ── Colors listing ────────────────────────────────────────────────────────────
-function renderColors() {
-  const allPlayers = Object.entries(S.players);
-  const total = allPlayers.length;
-  const withColors = allPlayers.filter(([,d])=>d.colors&&d.colors.length>0);
-  const sc = withColors.length;
-  const unknown = total - sc;
-  document.getElementById('colorsCount').textContent = sc ? `${sc} / ${total} scouttés` : '—';
-
-  if (!withColors.length) {
-    setScroll('colors', '<div class="state-box">Aucune couleur renseignée</div>');
-    return;
-  }
-
-  // Build groups
-  const groups = {};
-  withColors.forEach(([name, data]) => {
-    const key = [...data.colors].sort().join('+');
-    if (!groups[key]) groups[key] = { colors: data.colors, players: [] };
-    groups[key].players.push(name);
-  });
-
-  // Compute win rates from pairings for scouted players
-  // For each group, scan all completed pairings where a player of this group appeared
-  const allPairings = S.rounds.flatMap(r => r.pairings || []);
-  const completedPairings = allPairings.filter(p => p.isComplete && p.winner && p.winner !== 'draw');
-  const drawnPairings = allPairings.filter(p => p.isComplete && p.winner === 'draw');
-
-  // Map: playerName -> colorKey
-  const playerColorKey = {};
-  withColors.forEach(([name, data]) => {
-    playerColorKey[name] = [...data.colors].sort().join('+');
-  });
-
-  // Aggregate stats per group
-  const groupStats = {};
-  Object.keys(groups).forEach(k => { groupStats[k] = { w: 0, l: 0, d: 0 }; });
-
-  completedPairings.forEach(p => {
-    const k1 = playerColorKey[p.p1];
-    const k2 = playerColorKey[p.p2];
-    if (p.winner === 'p1') {
-      if (k1) groupStats[k1] && groupStats[k1].w++;
-      if (k2) groupStats[k2] && groupStats[k2].l++;
-    } else if (p.winner === 'p2') {
-      if (k2) groupStats[k2] && groupStats[k2].w++;
-      if (k1) groupStats[k1] && groupStats[k1].l++;
-    }
-  });
-  drawnPairings.forEach(p => {
-    const k1 = playerColorKey[p.p1];
-    const k2 = playerColorKey[p.p2];
-    if (k1) groupStats[k1] && groupStats[k1].d++;
-    if (k2) groupStats[k2] && groupStats[k2].d++;
-  });
-
-  // Sort by winrate desc, then by player count
-  const sorted = Object.entries(groups).sort(([ka, a], [kb, b]) => {
-    const sa = groupStats[ka], sb = groupStats[kb];
-    const totalA = sa.w + sa.l + sa.d, totalB = sb.w + sb.l + sb.d;
-    const wrA = totalA ? sa.w / totalA : -1;
-    const wrB = totalB ? sb.w / totalB : -1;
-    if (wrA !== wrB) return wrB - wrA;
-    return b.players.length - a.players.length;
-  });
-
-  // Best winrate for bar scaling
-  const maxWR = Math.max(...sorted.map(([k]) => {
-    const s = groupStats[k];
-    const t = s.w + s.l + s.d;
-    return t ? s.w / t : 0;
-  }), 0.01);
-
-  const pct = v => total ? Math.round(v / total * 100) : 0;
-  const unknownPill = unknown > 0
-    ? `<div class="colors-summary-pill unknown">❓ ${unknown} non renseignés (${pct(unknown)}%)</div>` : '';
-
-  // Color for the winrate bar (green → orange → red)
-  function barColor(wr) {
-    if (wr >= 0.6) return 'var(--success)';
-    if (wr >= 0.45) return 'var(--accent)';
-    return 'var(--danger)';
-  }
-
-  const html = sorted.map(([key, g]) => {
-    const dots = g.colors.map(cid => {
-      const c = COLORS.find(x => x.id === cid);
-      return c ? `<div class="cdot" style="background:${c.hex};width:14px;height:14px"></div>` : '';
-    }).join('');
-    const labels = g.colors.map(cid => COLORS.find(x => x.id === cid)?.label || cid).join(' + ');
-    const groupPct = pct(g.players.length);
-
-    const st = groupStats[key];
-    const totalMatches = st.w + st.l + st.d;
-    const wr = totalMatches ? st.w / totalMatches : null;
-    const wrPct = wr != null ? Math.round(wr * 100) : null;
-    // Bar width relative to best winrate
-    const barW = wr != null ? Math.round((wr / maxWR) * 100) : 0;
-
-    const winbarHtml = totalMatches > 0 ? `
-      <div class="combo-winbar-wrap">
-        <div class="combo-winbar-label">
-          <span class="combo-winbar-record">${st.w}V · ${st.l}D · ${st.d}N sur ${totalMatches} matchs</span>
-          <span class="combo-winrate-val">${wrPct}% victoires</span>
-        </div>
-        <div class="combo-winbar-track">
-          <div class="combo-winbar-fill" style="width:${barW}%;background:${barColor(wr)}"></div>
-        </div>
-      </div>` : `
-      <div class="combo-winbar-wrap">
-        <div class="combo-winbar-label">
-          <span class="combo-winbar-record">Aucun match terminé renseigné</span>
-        </div>
-      </div>`;
-
-    const players = g.players.map(n => {
-      const pd = S.players[n] || {};
-      const rec = pd.wins != null ? `${pd.wins}V-${pd.losses}D` : '';
-      return `<div class="combo-player" data-open-sheet="${esc(n)}">
-        <span class="combo-player-name">${esc(n)}</span>
-        ${rec ? `<span class="combo-player-rec">${rec}</span>` : ''}
-      </div>`;
-    }).join('');
-
-    return `<div class="combo-group">
-      <div class="combo-header">
-        <div class="combo-header-left">${dots}<span class="combo-label">${labels}</span></div>
-        <span class="combo-count">${g.players.length}× · ${groupPct}%</span>
-      </div>
-      ${winbarHtml}
-      <div class="combo-players">${players}</div>
-    </div>`;
-  }).join('');
-
-  // Summary pills above
-  const summaryHtml = `<div class="colors-summary">
-    ${unknownPill}
-    ${sorted.map(([key, g]) => {
-      const st = groupStats[key];
-      const tm = st.w + st.l + st.d;
-      const wr = tm ? Math.round(st.w / tm * 100) : null;
-      const dots = g.colors.map(cid => {
-        const c = COLORS.find(x => x.id === cid);
-        return c ? `<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${c.hex};margin-right:2px"></span>` : '';
-      }).join('');
-      return `<div class="colors-summary-pill">${dots}${wr != null ? wr + '%' : '?'}</div>`;
-    }).join('')}
-  </div>`;
-
-  setScroll('colors', summaryHtml + html);
-}
-
-// ── Bottom sheet ──────────────────────────────────────────────────────────────
-function openSheet(name) {
-  S.sheetPlayer = name;
-  S.sheetColors = [...(S.players[name]?.colors||[])];
-  document.getElementById('sheetName').textContent = name;
-  renderSheet();
-  document.getElementById('sheetOverlay').classList.add('open');
-}
-function renderSheet() {
-  document.getElementById('sheetHint').textContent =
-    S.sheetColors.length ? `Sélectionné: ${S.sheetColors.map(id=>COLORS.find(c=>c.id===id)?.label||id).join(' + ')}` :
-    'Sélectionne jusqu\'à 2 couleurs';
-
-  // Stats block
-  const p = S.players[S.sheetPlayer] || {};
-  const hasStats = p.wins != null || p.points != null;
-  const statsEl = document.getElementById('sheetStats');
-  if (statsEl) {
-    if (hasStats) {
-      const w = p.wins ?? 0, l = p.losses ?? 0, d = p.draws ?? 0, pts = p.points ?? 0;
-      const rankStr = p.rank != null ? `<div class="sheet-stat">🏆 <strong>#${p.rank}</strong></div>` : '';
-      statsEl.innerHTML = `
-        ${rankStr}
-        <div class="sheet-stat"><strong>${w}W-${l}L${d>0?'-'+d+'D':''}</strong></div>
-        <div class="sheet-stat"><strong>${pts}</strong> pts</div>`;
-      statsEl.style.display = 'flex';
-    } else {
-      statsEl.style.display = 'none';
-    }
-  }
-
-  document.getElementById('sheetColors').innerHTML = COLORS.map(c=>{
-    const sel = S.sheetColors.includes(c.id);
-    return `<div class="sheet-color-btn${sel?' sel':''}" style="--c:${c.hex}" onclick="toggleSheet('${c.id}')">
-      <div class="sc-circle" style="background:${c.hex}"></div>
-      <div class="sc-label">${c.label}</div>
-    </div>`;
-  }).join('');
-}
-function toggleSheet(id) {
-  const idx = S.sheetColors.indexOf(id);
-  if (idx>=0) S.sheetColors.splice(idx,1);
-  else if (S.sheetColors.length<2) S.sheetColors.push(id);
-  else { S.sheetColors.shift(); S.sheetColors.push(id); }
-  renderSheet();
-}
-function clearSheet() { S.sheetColors=[]; saveSheet(); }
-async function saveSheet() {
-  document.getElementById('sheetOverlay').classList.remove('open');
-  if (!S.sheetPlayer || !S.eventId) return;
-  await patchColors(S.sheetPlayer, [...S.sheetColors]);
-}
-function closeSheet(e) {
-  if (e.target===document.getElementById('sheetOverlay'))
-    document.getElementById('sheetOverlay').classList.remove('open');
-}
-
-// ── History ───────────────────────────────────────────────────────────────────
-const HKEY = 'lorcana-scout-history';
-function getHistory() { try { return JSON.parse(localStorage.getItem(HKEY)||'[]'); } catch { return []; } }
-function saveHistory(h) { localStorage.setItem(HKEY, JSON.stringify(h)); }
-
-function addHistory(id, meta, pc, sc) {
-  const h = getHistory().filter(e=>e.id!==id);
-  h.unshift({ id, name: meta?.title||`Tournoi #${id}`, location: meta?.location||'', players:pc, scouted:sc, at:Date.now() });
-  saveHistory(h.slice(0,20));
-  renderHistory();
-}
-function updateHistoryScout(id, sc) {
-  const h = getHistory();
-  const e = h.find(x=>x.id===id);
-  if (e) { e.scouted=sc; saveHistory(h); renderHistory(); }
-}
-function renderHistory() {
-  const h = getHistory();
-  const el = document.getElementById('historyScroll');
-  if (!h.length) { el.innerHTML='<div class="state-box">Aucun tournoi chargé</div>'; return; }
-  el.innerHTML = h.map(e=>`
-    <div class="history-item${S.eventId===e.id?' current':''}" onclick="loadEvent('${e.id}')">
-      <div class="hi-id">#${e.id}</div>
-      <div class="hi-name">${esc(e.name)}</div>
-      <div class="hi-meta">
-        <span>${e.players||0} joueurs</span>
-        ${e.scouted?`<span class="hi-scouted">↳ ${e.scouted} scouttés</span>`:''}
-      </div>
-    </div>`).join('')
-  + `<button class="hi-clear-btn" onclick="clearHistory()">🗑 Vider l'historique</button>`;
-}
-function clearHistory() {
-  if (confirm('Vider l\'historique ?')) { localStorage.removeItem(HKEY); renderHistory(); }
-}
-
-// ── Screens ───────────────────────────────────────────────────────────────────
-function switchScreen(name, btn) {
-  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));
-  document.getElementById(`screen-${name}`).classList.add('active');
-  if (btn) btn.classList.add('active');
-  S.activeScreen = name;
-  if (name==='colors') renderColors();
-  if (name==='history') renderHistory();
-  if (name==='standings') {
-    renderStandings();
-    // Auto-load if no data yet
-    if (!standingsData.length && S.eventId) loadStandings();
-  }
-}
-
-// ── Utils ─────────────────────────────────────────────────────────────────────
-function setScroll(screen, html) {
-  const map = { pairings:'pairingsScroll', roster:'rosterScroll', colors:'colorsScroll', history:'historyScroll', standings:'standingsScroll' };
-  const el = document.getElementById(map[screen]);
-  if (el) el.innerHTML = html;
-}
-function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-function showToast(msg, err=false) {
-  const t = document.createElement('div');
-  t.className = 'toast' + (err?' err':'');
-  t.textContent = msg;
-  document.body.appendChild(t);
-  setTimeout(()=>t.remove(), 2500);
-}
-
-// ── Init ──────────────────────────────────────────────────────────────────────
-renderHistory();
-// Recharger le dernier event automatiquement
-const lastEvent = localStorage.getItem('lorcana-last-event');
-if (lastEvent) {
-  document.getElementById('idInput').value = lastEvent;
-  loadEvent(lastEvent);
-}
-</script>
+<script src="app.js"></script>
+<script src="pairings.js"></script>
+<script src="ui.js"></script>
+<script src="auth.js"></script>
 </body>
 </html>

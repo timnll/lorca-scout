@@ -3,10 +3,34 @@ const cors = require('cors');
 const { WebSocketServer } = require('ws');
 const http = require('http');
 const { JSDOM } = require('jsdom');
+const path = require('path');
+const crypto = require('crypto');
 
 const app = express();
 app.use(cors());
 app.use(express.json());
+
+// ── Auth config ───────────────────────────────────────────────────────────────
+// Set PASSWORD env var to require a password. Leave empty to disable.
+// A random one is generated at startup if not set, printed to console.
+let APP_PASSWORD = process.env.PASSWORD || null;
+if (!APP_PASSWORD) {
+  APP_PASSWORD = crypto.randomBytes(3).toString('hex'); // e.g. "a3f9c2"
+  console.log(`🔑 Password: ${APP_PASSWORD}  (set PASSWORD env var to fix it)`);
+}
+
+app.get('/api/auth/check', (_, res) => {
+  res.json({ required: true, hint: '' });
+});
+
+app.post('/api/auth/login', (req, res) => {
+  const { password } = req.body || {};
+  if (password === APP_PASSWORD) {
+    res.json({ ok: true });
+  } else {
+    res.status(401).json({ ok: false });
+  }
+});
 
 // ── In-memory store ──────────────────────────────────────────────────────────
 const store = {};
@@ -66,13 +90,6 @@ async function fetchPage(url) {
   return res.text();
 }
 
-function extractTitleFromHTML(html) {
-  const dom = new JSDOM(html);
-  const doc = dom.window.document;
-  return doc.querySelector('h1')?.textContent?.trim() ||
-    doc.querySelector('title')?.textContent?.replace(/Event Details?\s*\|\s*/i, '').trim() || '';
-}
-
 // ── Parse event data ──────────────────────────────────────────────────────────
 function parseEventData(ev) {
   const meta = {
@@ -96,6 +113,14 @@ function playerNameFromRegistration(reg) {
   return reg?.best_identifier || reg?.special_user_identifier || reg?.user?.best_identifier || null;
 }
 
+// Real name = user.best_identifier (e.g. "Julien B") — first name only for display
+function realNameFromRegistration(reg) {
+  const raw = reg?.user?.best_identifier || '';
+  // Take first word (first name) if it looks like "Firstname L"
+  const parts = raw.trim().split(/\s+/);
+  return parts.length >= 2 ? parts[0] : raw;
+}
+
 function nameFromRelationship(rel) {
   return rel?.user_event_status?.best_identifier || rel?.player?.best_identifier || null;
 }
@@ -109,44 +134,36 @@ function pairingFromMatch(match, idx) {
 
   const table = match?.table_number ?? (idx + 1);
   const isComplete = match?.status === 'COMPLETE';
-  const isBye = match?.match_is_bye === true;
   const isDraw = match?.match_is_intentional_draw || match?.match_is_unintentional_draw;
-  const winnerId = match?.winning_player; // user id of winner
+  const winnerId = match?.winning_player;
 
-  // Find which rel corresponds to winner
-  let winner = null; // 'p1' | 'p2' | 'draw' | null
+  let winner = null;
   if (isComplete) {
     if (isDraw) {
       winner = 'draw';
     } else if (winnerId != null) {
       const winnerRel = rels.find(r => r.player?.id === winnerId);
-      if (winnerRel) {
-        winner = nameFromRelationship(winnerRel) === p1 ? 'p1' : 'p2';
-      }
+      if (winnerRel) winner = nameFromRelationship(winnerRel) === p1 ? 'p1' : 'p2';
     }
   }
 
-  // Game scores
   const gWW = match?.games_won_by_winner ?? null;
   const gWL = match?.games_won_by_loser ?? null;
 
-  return { table, p1, p2, winner, gWW, gWL, isComplete, isBye };
+  return { table, p1, p2, winner, gWW, gWL, isComplete };
 }
 
 // ── Load rounds ───────────────────────────────────────────────────────────────
 async function loadRounds(roundDefs) {
   const rounds = [];
   for (const { num, roundId, pairingsStatus } of roundDefs) {
-    if (pairingsStatus !== 'GENERATED') {
-      console.log(`  [round ${num}] pairings not generated yet, skipping`);
-      continue;
-    }
+    if (pairingsStatus !== 'GENERATED') continue;
     try {
       const matches = await apiGetAll(`/tournament-rounds/${roundId}/matches/paginated`);
       const pairings = matches.map(pairingFromMatch).filter(Boolean);
       if (pairings.length > 0) {
         rounds.push({ num, pairings });
-        console.log(`  [round ${num}] ${pairings.length} pairings (roundId=${roundId})`);
+        console.log(`  [round ${num}] ${pairings.length} pairings`);
       }
     } catch (e) {
       console.warn(`  [round ${num}] failed: ${e.message}`);
@@ -160,47 +177,81 @@ async function loadRounds(roundDefs) {
 app.get('/api/events/:id', async (req, res) => {
   const { id } = req.params;
   try {
+    // Serve cached data immediately (rounds included)
     if (store[id] && !req.query.refresh) return res.json(store[id]);
     console.log(`\n[event] Loading ${id}`);
 
     const ev = await apiGet(`/events/${id}`);
     const { meta, roundDefs } = parseEventData(ev);
     console.log(`[event] Meta:`, meta);
-    console.log(`[event] ${roundDefs.length} rounds defined`);
 
     const registrations = await apiGetAll(`/events/${id}/registrations`);
-    const playerNames = [...new Set(registrations.map(playerNameFromRegistration).filter(Boolean))];
-    console.log(`[event] ${playerNames.length} players`);
-    meta.players = String(playerNames.length);
+    console.log(`[event] ${registrations.length} registrations`);
+    meta.players = String(registrations.length);
 
-    // Build player map with stats from registrations
     const existing = store[id]?.players || {};
     const players = {};
+    const realNames = {};
+
     registrations.forEach(reg => {
       const name = playerNameFromRegistration(reg);
       if (!name) return;
       players[name] = {
         ...(existing[name] || {}),
         colors: existing[name]?.colors || [],
-        // Store stats for display in the sheet
         wins: reg.matches_won ?? 0,
         losses: reg.matches_lost ?? 0,
         draws: reg.matches_drawn ?? 0,
         points: reg.total_match_points ?? 0,
         rank: reg.final_place_in_standings ?? null,
       };
+      const rn = realNameFromRegistration(reg);
+      if (rn && rn !== name) realNames[name] = rn;
     });
 
-    const rounds = await loadRounds(roundDefs);
-    console.log(`[event] ${rounds.length} rounds loaded`);
-
-    store[id] = { meta, players, rounds, eventId: id, loadedAt: new Date().toISOString() };
+    // Respond immediately with roster + meta, rounds = [] for now
+    store[id] = { meta, players, realNames, rounds: [], eventId: id, loadedAt: new Date().toISOString() };
     res.json(store[id]);
+
+    // Stream rounds in background via WebSocket
+    loadRoundsStreaming(id, roundDefs);
+
   } catch (err) {
     console.error('[event error]', err);
     res.status(500).json({ error: err.message });
   }
 });
+
+// Load rounds one by one, pushing each via WS as it arrives
+async function loadRoundsStreaming(eventId, roundDefs) {
+  const generated = roundDefs.filter(r => r.pairingsStatus === 'GENERATED');
+  console.log(`[rounds] Streaming ${generated.length} rounds for event ${eventId}`);
+
+  for (const { num, roundId } of generated) {
+    try {
+      const matches = await apiGetAll(`/tournament-rounds/${roundId}/matches/paginated`);
+      const pairings = matches.map(pairingFromMatch).filter(Boolean);
+      if (!pairings.length) continue;
+
+      const round = { num, pairings };
+      // Add to store in order
+      if (!store[eventId]) continue;
+      const rounds = store[eventId].rounds;
+      const idx = rounds.findIndex(r => r.num > num);
+      if (idx === -1) rounds.push(round);
+      else rounds.splice(idx, 0, round);
+
+      // Push to all WS clients watching this event
+      broadcast(eventId, { type: 'roundLoaded', round });
+      console.log(`  [round ${num}] pushed (${pairings.length} pairings)`);
+    } catch (e) {
+      console.warn(`  [round ${num}] failed: ${e.message}`);
+    }
+  }
+
+  broadcast(eventId, { type: 'roundsComplete', eventId });
+  console.log(`[rounds] All rounds streamed for event ${eventId}`);
+}
 
 app.patch('/api/events/:id/players/:playerName', (req, res) => {
   const { id, playerName } = req.params;
@@ -225,14 +276,12 @@ app.get('/api/events/:id/colors', (req, res) => {
   res.json(result);
 });
 
-// Standings: built from player data already in store (populated at load time)
 app.get('/api/events/:id/standings', async (req, res) => {
   const { id } = req.params;
   try {
-    // Refresh from API to get latest stats
     const registrations = await apiGetAll(`/events/${id}/registrations`);
     const standings = registrations
-      .map((reg, idx) => {
+      .map(reg => {
         const name = playerNameFromRegistration(reg);
         if (!name) return null;
         return {
@@ -246,14 +295,12 @@ app.get('/api/events/:id/standings', async (req, res) => {
       })
       .filter(Boolean)
       .sort((a, b) => {
-        // Sort by rank if available, else by points desc
         if (a.rank != null && b.rank != null) return a.rank - b.rank;
         if (a.rank != null) return -1;
         if (b.rank != null) return 1;
         return b.points - a.points;
       });
 
-    // Also update the in-memory store with fresh stats
     if (store[id]) {
       registrations.forEach(reg => {
         const name = playerNameFromRegistration(reg);
@@ -283,7 +330,11 @@ app.get('/api/debug/:id', async (req, res) => {
 
 app.get('/api/health', (_, res) => res.json({ ok: true, events: Object.keys(store) }));
 
-const path = require('path');
+// ── Static files ──────────────────────────────────────────────────────────────
+// Serve JS files from same directory
+app.use(express.static(__dirname));
+
+// Catch-all: serve index.html
 app.get('*', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
 
 const PORT = process.env.PORT || 3001;
